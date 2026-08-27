@@ -3,12 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>I Miei Orari V10</title>
+  <title>I Miei Orari V11</title>
   
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" crossorigin="anonymous"></script>
   
   <style>
-    /* VARIABILI TEMA */
     :root {
       --bg-color: #f2f2f7;
       --card-bg: #ffffff;
@@ -239,9 +238,9 @@
       <input type="number" id="paga-base" step="0.01" value="6.23" onchange="salvaImpostazioni()">
       <label for="monte-ore">Monte ore settimanale (scatto straordinari)</label>
       <select id="monte-ore" onchange="salvaImpostazioni()">
-        <option value="40" selected>40 ore</option>
+        <option value="40">40 ore</option>
         <option value="24">24 ore</option>
-        <option value="20">20 ore</option>
+        <option value="20" selected>20 ore</option>
       </select>
       
       <h3 style="font-size: 14px; margin-top: 20px; border-bottom: 1px solid var(--border); padding-bottom: 4px;">Fascia Notturna</h3>
@@ -280,7 +279,6 @@
   </nav>
 
   <script>
-    // --- UI UX FUNZIONI ---
     function showToast(msg, icon="✅") {
       const tb = document.getElementById('toastBox');
       document.getElementById('toastMsg').innerText = msg;
@@ -324,13 +322,13 @@
       }
     }
 
-    let isDark = localStorage.getItem('theme_v10') === 'dark';
+    let isDark = localStorage.getItem('theme_v11') === 'dark';
     function applyTheme() {
       if(isDark) document.documentElement.setAttribute('data-theme', 'dark');
       else document.documentElement.removeAttribute('data-theme');
     }
     function toggleTheme() {
-      isDark = !isDark; localStorage.setItem('theme_v10', isDark ? 'dark' : 'light');
+      isDark = !isDark; localStorage.setItem('theme_v11', isDark ? 'dark' : 'light');
       applyTheme();
       if(document.getElementById('view-riepilogo').classList.contains('active')) renderRiepilogoMensile(); 
     }
@@ -351,16 +349,16 @@
       document.getElementById('app-title').innerText = titles[tabName];
     }
 
-    // --- LOGICA DATI E MIGRAZIONE ---
     document.getElementById('data-turno').valueAsDate = new Date();
     
-    // Tenta di caricare dalla v10. Se è vuoto, recupera i dati della v9 in automatico.
-    let turni = safeLoadJSON('mieiTurni_v10', safeLoadJSON('mieiTurni_v9', []));
-    let modelli = safeLoadJSON('mieiModelli_v10', safeLoadJSON('mieiModelli_v9', []));
-    let impostazioni = safeLoadJSON('mieImpostazioni_v10', safeLoadJSON('mieImpostazioni_v9', { 
-      pagaBase: 6.23, monteOre: 40, inizioNotte: '01:00', fineNotte: '07:00',
+    let turni = safeLoadJSON('mieiTurni_v11', safeLoadJSON('mieiTurni_v10', safeLoadJSON('mieiTurni_v9', [])));
+    let modelli = safeLoadJSON('mieiModelli_v11', safeLoadJSON('mieiModelli_v10', safeLoadJSON('mieiModelli_v9', [])));
+    
+    // Default impostazioni con monteOre impostato a 20 di base
+    let impostazioni = safeLoadJSON('mieImpostazioni_v11', safeLoadJSON('mieImpostazioni_v10', safeLoadJSON('mieImpostazioni_v9', { 
+      pagaBase: 6.23, monteOre: 20, inizioNotte: '01:00', fineNotte: '07:00',
       percStraordinario: 20, percNotturno: 20, percFestivo: 55, percRiposo: 75, percDomenica: 10, bonusFestivo: 25
-    }));
+    })));
 
     const configMap = {
       'paga-base': 'pagaBase', 'monte-ore': 'monteOre', 'inizio-notte': 'inizioNotte', 'fine-notte': 'fineNotte',
@@ -375,9 +373,10 @@
     function salvaImpostazioni() {
       Object.keys(configMap).forEach(id => {
         let val = document.getElementById(id).value;
-        impostazioni[configMap[id]] = id.includes('notte') ? val : parseFloat(val) || 0;
+        impostazioni[configMap[id]] = (id.includes('notte') || id === 'monte-ore') && id !== 'paga-base' && !id.includes('perc') && id !== 'bonus-festivo' ? val : (id === 'monte-ore' ? parseInt(val) || 20 : parseFloat(val) || 0);
+        if(id === 'monte-ore') impostazioni[configMap[id]] = parseInt(val) || 20;
       });
-      localStorage.setItem('mieImpostazioni_v10', JSON.stringify(impostazioni));
+      localStorage.setItem('mieImpostazioni_v11', JSON.stringify(impostazioni));
       showToast("Impostazioni salvate", "⚙️");
       aggiornaTutto();
     }
@@ -410,7 +409,6 @@
       return fissi.includes(`${d}-${m}`) || `${d}-${m}` === getPasquetta(y);
     }
 
-    // --- MODELLI (TEMPLATES) ---
     function salvaModello() {
       const nome = document.getElementById('nome-modello').value.trim();
       const inizio = document.getElementById('ora-inizio').value;
@@ -429,7 +427,7 @@
         showToast("Modello salvato", "💾");
       }
       
-      localStorage.setItem('mieiModelli_v10', JSON.stringify(modelli));
+      localStorage.setItem('mieiModelli_v11', JSON.stringify(modelli));
       document.getElementById('nome-modello').value = '';
       renderModelli();
     }
@@ -437,7 +435,7 @@
     function eliminaModello(id, event) {
       event.stopPropagation();
       modelli = modelli.filter(m => m.id !== id);
-      localStorage.setItem('mieiModelli_v10', JSON.stringify(modelli));
+      localStorage.setItem('mieiModelli_v11', JSON.stringify(modelli));
       renderModelli();
       showToast("Modello eliminato", "🗑️");
     }
@@ -478,7 +476,6 @@
       cont.innerHTML = html;
     }
 
-    // --- SALVATAGGIO TURNO ---
     function salvaTurno() {
       const dataStr = document.getElementById('data-turno').value;
       const inizioStr = document.getElementById('ora-inizio').value;
@@ -519,7 +516,7 @@
         calcolaFrammento(dataStr2, 0, fineMinuti, 0, badgeGiorno2, "00:00", fineStr);
       }
       
-      localStorage.setItem('mieiTurni_v10', JSON.stringify(turni));
+      localStorage.setItem('mieiTurni_v11', JSON.stringify(turni));
       aggiornaTutto();
       showToast("Turno registrato con successo!");
       document.getElementById('ora-inizio').value = ''; 
@@ -551,7 +548,7 @@
     function richiediEliminazione(id) {
       showConfirm("Elimina Turno", "Vuoi cancellare questo inserimento?", () => {
         turni = turni.filter(t => t.id !== id);
-        localStorage.setItem('mieiTurni_v10', JSON.stringify(turni));
+        localStorage.setItem('mieiTurni_v11', JSON.stringify(turni));
         closeConfirmModal();
         showToast("Turno eliminato", "🗑️");
         aggiornaTutto();
@@ -563,7 +560,6 @@
       });
     }
 
-    // --- BACKUP E RIPRISTINO DATI ---
     function esportaDati() {
       const exportData = { turni, modelli, impostazioni };
       const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportData));
@@ -587,9 +583,9 @@
           if (imported.modelli) modelli = imported.modelli;
           if (imported.impostazioni) impostazioni = imported.impostazioni;
           
-          localStorage.setItem('mieiTurni_v10', JSON.stringify(turni));
-          localStorage.setItem('mieiModelli_v10', JSON.stringify(modelli));
-          localStorage.setItem('mieImpostazioni_v10', JSON.stringify(impostazioni));
+          localStorage.setItem('mieiTurni_v11', JSON.stringify(turni));
+          localStorage.setItem('mieiModelli_v11', JSON.stringify(modelli));
+          localStorage.setItem('mieImpostazioni_v11', JSON.stringify(impostazioni));
           
           Object.keys(configMap).forEach(id => {
             if(document.getElementById(id)) document.getElementById(id).value = impostazioni[configMap[id]];
@@ -605,7 +601,6 @@
       event.target.value = '';
     }
 
-    // --- CALENDARIO ---
     let cDate = new Date();
     function cambiaMese(step) { cDate.setMonth(cDate.getMonth() + step); renderCalendar(); }
 
@@ -672,7 +667,6 @@
       switchTab('inserisci', btnInserisci);
     }
 
-    // --- RIEPILOGO VERO: CALCOLO STRAORDINARI SETTIMANALI ASSOLUTI ---
     let rDate = new Date();
     let myChart = null;
 
@@ -683,7 +677,6 @@
       const mN = ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"];
       document.getElementById('riepilogo-mese-label').innerText = `${mN[m]} ${y}`;
 
-      // 1. Organizza TUTTI i turni salvati (non solo del mese) per settimana per trovare dove scattano gli straordinari
       let turniPerSettimana = {};
       turni.forEach(t => {
           let d = new Date(t.data);
@@ -693,13 +686,12 @@
       });
 
       let tO = 0, tD = 0, tN = 0, tF = 0, tDom = 0, tR = 0;
-      let oN = 0; // ore puramente normali del mese
-      let sM = 0; // straordinari di questo mese
+      let oN = 0; 
+      let sM = 0; 
       let giorniFestiviUnici = new Set();
+      let monteOreTarget = parseInt(impostazioni.monteOre) || 20;
 
-      // 2. Calcola l'andamento settimana per settimana
       for (let lunedi in turniPerSettimana) {
-          // Ordina cronologicamente i turni della singola settimana
           let turniSett = turniPerSettimana[lunedi].sort((a,b) => {
               let dataA = new Date(a.data), dataB = new Date(b.data);
               if(dataA.getTime() !== dataB.getTime()) return dataA - dataB;
@@ -724,17 +716,16 @@
                   if(t.badge==='domenica') tDom += t.oreTotali;
                   if(t.badge==='riposo_mancato') tR += t.oreTotali; 
                   
-                  // Verifica se il turno sfora il monte ore in questa specifica settimana
                   let quotaNormale = 0;
                   let quotaStraordinaria = 0;
 
-                  if (orePrima >= impostazioni.monteOre) {
-                      quotaStraordinaria = t.oreTotali; // La settimana era già in straordinario
-                  } else if (oreDopo > impostazioni.monteOre) {
-                      quotaNormale = impostazioni.monteOre - orePrima; // Parte normale prima dello sforamento
-                      quotaStraordinaria = oreDopo - impostazioni.monteOre; // Parte eccedente
+                  if (orePrima >= monteOreTarget) {
+                      quotaStraordinaria = t.oreTotali; 
+                  } else if (oreDopo > monteOreTarget) {
+                      quotaNormale = monteOreTarget - orePrima; 
+                      quotaStraordinaria = oreDopo - monteOreTarget; 
                   } else {
-                      quotaNormale = t.oreTotali; // Tutto il turno è entro il monte ore
+                      quotaNormale = t.oreTotali; 
                   }
 
                   oN += quotaNormale;
@@ -743,7 +734,6 @@
           });
       }
 
-      // Aggiorna Tabelle
       document.getElementById('tabella-ore-mensili').innerHTML = `
         <tr><th>Tipologia</th><th>Ore</th></tr>
         <tr><td>Lavorate (Totali)</td><td>${tO.toFixed(2)}h</td></tr>
@@ -751,7 +741,7 @@
         <tr><td>Notturne (Fascia ${impostazioni.inizioNotte}-${impostazioni.fineNotte})</td><td>${tN.toFixed(2)}h</td></tr>
         <tr><td>Domeniche</td><td>${tDom.toFixed(2)}h</td></tr>
         <tr><td>Festivi Fissi</td><td>${tF.toFixed(2)}h</td></tr>
-        <tr><td>Straordinari (Oltre limite settimanale)</td><td>${sM.toFixed(2)}h</td></tr>
+        <tr><td>Straordinari (Oltre ${monteOreTarget}h settimanali)</td><td>${sM.toFixed(2)}h</td></tr>
       `;
 
       let p = impostazioni.pagaBase;
@@ -769,7 +759,7 @@
         <tr><th>Voce</th><th>Importo</th></tr>
         <tr><td>Paga Base Standard</td><td>€ ${cB.toFixed(2)}</td></tr>
         <tr><td>Maggiorazioni Notturne</td><td>€ ${cN.toFixed(2)}</td></tr>
-        <tr><td>Straordinari (Oltre tetto settimanale)</td><td>€ ${cS.toFixed(2)}</td></tr>
+        <tr><td>Straordinari (Oltre ore)</td><td>€ ${cS.toFixed(2)}</td></tr>
         <tr><td>Domeniche (+${impostazioni.percDomenica}%)</td><td>€ ${cDom.toFixed(2)}</td></tr>
         <tr><td>Festivi (+${impostazioni.percFestivo}% e fisse)</td><td>€ ${(cF + cFissoFestivo).toFixed(2)}</td></tr>
         <tr style="border-top:2px solid var(--accent); color:var(--accent);"><td>NETTO STIMATO</td><td>€ ${tot.toFixed(2)}</td></tr>
@@ -804,7 +794,7 @@
 
     function richiediCancellazione() {
       showConfirm("Inizializza App", "Sei sicuro di voler cancellare tutti i turni salvati? Non potrai recuperarli senza un backup.", () => {
-        turni = []; localStorage.removeItem('mieiTurni_v10');
+        turni = []; localStorage.removeItem('mieiTurni_v11');
         aggiornaTutto(); showToast("Dati cancellati", "🧹");
       });
     }
