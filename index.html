@@ -3,8 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>I Miei Orari V8</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <title>I Miei Orari V9</title>
+  
+  <!-- Chart.js bloccato su versione specifica con predisposizione SRI per sicurezza -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" crossorigin="anonymous"></script>
+  
   <style>
     /* VARIABILI TEMA */
     :root {
@@ -42,7 +45,6 @@
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg-color); color: var(--text-main); margin: 0; padding: 15px; padding-bottom: 90px; transition: background 0.3s, color 0.3s; }
     
-    /* HEADER & TOGGLE */
     .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding: 0 5px; }
     .header h1 { font-size: 26px; margin: 0; font-weight: 700; letter-spacing: -0.5px; }
     
@@ -52,11 +54,9 @@
     [data-theme="dark"] .toggle-switch { background: var(--accent); }
     [data-theme="dark"] .toggle-switch::after { transform: translateX(20px); }
 
-    /* SEZIONI E ANIMAZIONI */
     .view-section { display: none; opacity: 0; transform: translateY(10px); transition: opacity 0.4s ease, transform 0.4s ease; }
     .view-section.active { display: block; opacity: 1; transform: translateY(0); }
 
-    /* CARDS E FORM */
     .card { background: var(--card-bg); padding: 20px; border-radius: 20px; box-shadow: 0 4px 20px var(--shadow); margin-bottom: 20px; transition: background 0.3s; }
     .card h2 { font-size: 18px; margin-top: 0; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid var(--border); font-weight: 600; }
     label { display: block; font-size: 12px; font-weight: 600; margin-top: 12px; margin-bottom: 6px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;}
@@ -69,7 +69,6 @@
     button.outline { background: transparent; border: 1px solid var(--danger); color: var(--danger); }
     button.btn-sm { width: auto; padding: 8px 12px; font-size: 13px; margin-top: 0; }
 
-    /* CALENDARIO */
     .calendar-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
     .calendar-controls button { width: auto; margin: 0; padding: 8px 16px; font-size: 14px; border-radius: 10px; background: var(--input-bg); color: var(--accent); }
     .calendar-controls h3 { margin: 0; font-size: 16px; font-weight: 600; }
@@ -81,41 +80,33 @@
     .day-cell.empty { background: transparent; border: none; cursor: default; }
     .day-hours { font-size: 10px; font-weight: 700; background: var(--accent); color: white; border-radius: 4px; padding: 2px 4px; margin-top: 4px; }
 
-    /* TABELLE */
     .table-custom { width: 100%; border-collapse: collapse; font-size: 14px; }
     .table-custom th, .table-custom td { padding: 12px 8px; text-align: left; border-bottom: 1px solid var(--border); }
     .table-custom th { color: var(--text-muted); font-size: 12px; text-transform: uppercase; font-weight: 600;}
     .table-custom td:last-child, .table-custom th:last-child { text-align: right; font-weight: 700; }
 
-    /* GRAFICO */
     .chart-container { position: relative; height: 220px; width: 100%; margin-bottom: 20px; }
 
-    /* NAV IN BASSO */
     .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--nav-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-top: 1px solid var(--border); display: grid; grid-template-columns: repeat(3, 1fr); padding: 10px 0 env(safe-area-inset-bottom, 15px) 0; z-index: 100; }
     .nav-item { background: transparent; border: none; margin: 0; padding: 5px 0; color: var(--text-muted); font-size: 11px; font-weight: 600; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; transition: 0.2s; }
     .nav-item span { font-size: 20px; transition: transform 0.2s; }
     .nav-item.active { color: var(--accent); }
     .nav-item.active span { transform: scale(1.15); }
 
-    /* TOAST E MODALS */
     .toast { position: fixed; top: -100px; left: 50%; transform: translateX(-50%); background: var(--card-bg); color: var(--text-main); padding: 14px 24px; border-radius: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); font-weight: 600; font-size: 14px; z-index: 3000; transition: top 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; align-items: center; gap: 10px; border: 1px solid var(--border);}
     .toast.show { top: 40px; }
     
-    /* OVERLAY 1: Sfondo per la tendina del calendario */
     .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--overlay); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); z-index: 1500; opacity: 0; pointer-events: none; transition: 0.3s; }
     .overlay.show { opacity: 1; pointer-events: auto; }
     
-    /* OVERLAY 2: Sfondo scuro separato per i popup di conferma (più in alto) */
     .overlay-confirm { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--overlay); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); z-index: 1900; opacity: 0; pointer-events: none; transition: 0.3s; }
     .overlay-confirm.show { opacity: 1; pointer-events: auto; }
 
-    /* MODAL CONFERMA */
     .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.9); background: var(--card-bg); padding: 25px; border-radius: 20px; width: 85%; max-width: 320px; z-index: 2000; opacity: 0; pointer-events: none; transition: 0.3s; box-shadow: 0 20px 40px rgba(0,0,0,0.25); text-align: center;}
     .modal.show { opacity: 1; pointer-events: auto; transform: translate(-50%, -50%) scale(1); }
     .modal-actions { display: flex; gap: 10px; margin-top: 15px;}
     .modal-actions button { margin-top: 0; }
 
-    /* BOTTOM SHEET */
     .bottom-sheet { position: fixed; bottom: -100%; left: 0; width: 100%; background: var(--card-bg); border-radius: 25px 25px 0 0; z-index: 1600; padding: 25px 20px calc(20px + env(safe-area-inset-bottom, 0px)); transition: bottom 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1); box-shadow: 0 -10px 40px rgba(0,0,0,0.15); max-height: 85vh; overflow-y: auto;}
     .bottom-sheet.show { bottom: 0; }
     .sheet-handle { width: 40px; height: 5px; background: var(--border); border-radius: 3px; margin: 0 auto 20px auto; }
@@ -127,7 +118,6 @@
     .badge-domenica { background: var(--badge-domenica); }
     .badge-riposo { background: var(--badge-riposo); }
 
-    /* TEMPLATE (MODELLI RAPIDI) */
     .modelli-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; margin-top: 10px; }
     .modello-card { background: var(--input-bg); border: 1px solid var(--border); padding: 12px; border-radius: 12px; cursor: pointer; display: flex; flex-direction: column; gap: 5px; transition: 0.2s;}
     .modello-card:active { transform: scale(0.95); border-color: var(--accent);}
@@ -138,16 +128,13 @@
 </head>
 <body>
 
-  <!-- TOAST NOTIFICATION -->
   <div class="toast" id="toastBox">
     <span class="toast-icon" id="toastIcon">✅</span>
     <span id="toastMsg">Azione completata</span>
   </div>
 
-  <!-- OVERLAY TENDINA CALENDARIO -->
   <div class="overlay" id="mainOverlay" onclick="closeSheet()"></div>
 
-  <!-- BOTTOM SHEET DETTAGLI GIORNO -->
   <div class="bottom-sheet" id="daySheet">
     <div class="sheet-handle"></div>
     <h2 id="sheetDate" style="margin-top:0; font-size:20px;">Dettagli Turno</h2>
@@ -155,7 +142,6 @@
     <button class="outline" style="margin-top: 15px; border-color: var(--border); color: var(--text-muted);" onclick="closeSheet()">Chiudi</button>
   </div>
 
-  <!-- OVERLAY E MODAL CONFERMA (In primissimo piano) -->
   <div class="overlay-confirm" id="confirmOverlay" onclick="closeConfirmModal()"></div>
   <div class="modal" id="confirmModal">
     <h3 id="modalTitle">Attenzione</h3>
@@ -166,11 +152,10 @@
     </div>
   </div>
 
-  <!-- HEADER APP -->
   <div class="header">
     <h1 id="app-title">Calendario</h1>
     <div class="theme-toggle-container">
-      <div class="toggle-switch" onclick="toggleTheme()" id="btn-theme"></div>
+      <div class="toggle-switch" onclick="toggleTheme()" id="btn-theme" aria-label="Cambia tema"></div>
     </div>
   </div>
 
@@ -178,9 +163,9 @@
   <div id="view-calendario" class="view-section active">
     <div class="card">
       <div class="calendar-controls">
-        <button onclick="cambiaMese(-1)">◀ Mese</button>
+        <button onclick="cambiaMese(-1)" aria-label="Mese precedente">◀ Mese</button>
         <h3 id="mese-corrente-label">Mese Anno</h3>
-        <button onclick="cambiaMese(1)">Mese ▶</button>
+        <button onclick="cambiaMese(1)" aria-label="Mese successivo">Mese ▶</button>
       </div>
       <div class="calendar-grid" id="calendar-header">
         <div class="day-name">Lun</div><div class="day-name">Mar</div><div class="day-name">Mer</div>
@@ -194,15 +179,15 @@
   <div id="view-inserisci" class="view-section">
     <div class="card">
       <h2>Nuovo Turno</h2>
-      <label>Data</label>
+      <label for="data-turno">Data</label>
       <input type="date" id="data-turno">
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-        <div><label>Inizio</label><input type="time" id="ora-inizio" step="900" required></div>
-        <div><label>Fine</label><input type="time" id="ora-fine" step="900" required></div>
+        <div><label for="ora-inizio">Inizio</label><input type="time" id="ora-inizio" step="900" required></div>
+        <div><label for="ora-fine">Fine</label><input type="time" id="ora-fine" step="900" required></div>
       </div>
-      <label>Pausa (minuti non pagati)</label>
-      <input type="number" id="pausa" value="0">
-      <label>Contesto (Opzionale)</label>
+      <label for="pausa">Pausa (minuti non pagati)</label>
+      <input type="number" id="pausa" value="0" min="0">
+      <label for="tipo-giornata">Contesto (Opzionale)</label>
       <select id="tipo-giornata">
         <option value="normale">Automatico (Normale / Festivo / Dom)</option>
         <option value="riposo_mancato">Riposo Non Goduto (7° Giorno)</option>
@@ -210,7 +195,7 @@
       
       <div style="display: flex; gap: 10px; align-items: flex-end;">
         <div style="flex-grow: 1;">
-          <label>Nome Modello (Opzionale per salvare)</label>
+          <label for="nome-modello">Nome Modello (Opzionale)</label>
           <input type="text" id="nome-modello" placeholder="Es. Mattina Esterni">
         </div>
         <button class="outline btn-sm" style="margin-bottom: 5px; height: 48px;" onclick="salvaModello()">Salva <br>Modello</button>
@@ -221,9 +206,7 @@
 
     <div class="card">
       <h2>Modelli Salvati (Incolla Rapido)</h2>
-      <div class="modelli-grid" id="modelli-container">
-        <!-- Generato da JS -->
-      </div>
+      <div class="modelli-grid" id="modelli-container"></div>
     </div>
   </div>
 
@@ -231,12 +214,11 @@
   <div id="view-riepilogo" class="view-section">
     <div class="card">
       <div class="calendar-controls" style="margin-bottom: 20px;">
-        <button onclick="cambiaMeseRiepilogo(-1)">◀</button>
+        <button onclick="cambiaMeseRiepilogo(-1)" aria-label="Mese precedente">◀</button>
         <h3 id="riepilogo-mese-label">Mese Anno</h3>
-        <button onclick="cambiaMeseRiepilogo(1)">▶</button>
+        <button onclick="cambiaMeseRiepilogo(1)" aria-label="Mese successivo">▶</button>
       </div>
       
-      <!-- GRAFICO -->
       <div class="chart-container">
         <canvas id="myChart"></canvas>
       </div>
@@ -254,9 +236,9 @@
 
     <div class="card">
       <h2>Impostazioni & Tariffe</h2>
-      <label>Paga Base Oraria (€)</label>
+      <label for="paga-base">Paga Base Oraria (€)</label>
       <input type="number" id="paga-base" step="0.01" value="6.23" onchange="salvaImpostazioni()">
-      <label>Monte ore settimanale</label>
+      <label for="monte-ore">Monte ore settimanale</label>
       <select id="monte-ore" onchange="salvaImpostazioni()">
         <option value="40" selected>40 ore</option>
         <option value="24">24 ore</option>
@@ -265,31 +247,30 @@
       
       <h3 style="font-size: 14px; margin-top: 20px; border-bottom: 1px solid var(--border); padding-bottom: 4px;">Fascia Notturna</h3>
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-        <div><label>Inizio</label><input type="time" id="inizio-notte" value="01:00" step="900" onchange="salvaImpostazioni()"></div>
-        <div><label>Fine</label><input type="time" id="fine-notte" value="07:00" step="900" onchange="salvaImpostazioni()"></div>
+        <div><label for="inizio-notte">Inizio</label><input type="time" id="inizio-notte" value="01:00" step="900" onchange="salvaImpostazioni()"></div>
+        <div><label for="fine-notte">Fine</label><input type="time" id="fine-notte" value="07:00" step="900" onchange="salvaImpostazioni()"></div>
       </div>
 
       <h3 style="font-size: 14px; margin-top: 20px; border-bottom: 1px solid var(--border); padding-bottom: 4px;">Maggiorazioni (%)</h3>
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-        <div><label>Domenica</label><input type="number" id="perc-domenica" value="10" onchange="salvaImpostazioni()"></div>
-        <div><label>Straordinari</label><input type="number" id="perc-straordinario" value="20" onchange="salvaImpostazioni()"></div>
-        <div><label>Notturno</label><input type="number" id="perc-notturno" value="20" onchange="salvaImpostazioni()"></div>
-        <div><label>Festivo</label><input type="number" id="perc-festivo" value="55" onchange="salvaImpostazioni()"></div>
+        <div><label for="perc-domenica">Domenica</label><input type="number" id="perc-domenica" value="10" min="0" onchange="salvaImpostazioni()"></div>
+        <div><label for="perc-straordinario">Straordinari</label><input type="number" id="perc-straordinario" value="20" min="0" onchange="salvaImpostazioni()"></div>
+        <div><label for="perc-notturno">Notturno</label><input type="number" id="perc-notturno" value="20" min="0" onchange="salvaImpostazioni()"></div>
+        <div><label for="perc-festivo">Festivo</label><input type="number" id="perc-festivo" value="55" min="0" onchange="salvaImpostazioni()"></div>
       </div>
 
       <h3 style="font-size: 14px; margin-top: 20px; border-bottom: 1px solid var(--border); padding-bottom: 4px;">Bonus Fissi (€)</h3>
-      <label>Bonus Festivo (Indennità fissa al giorno)</label>
-      <input type="number" id="bonus-festivo" step="1" value="25" onchange="salvaImpostazioni()">
+      <label for="bonus-festivo">Bonus Festivo (Indennità al giorno)</label>
+      <input type="number" id="bonus-festivo" step="1" value="25" min="0" onchange="salvaImpostazioni()">
       
       <button class="outline" style="margin-top: 25px;" onclick="richiediCancellazione()">Inizializza App (Cancella Dati)</button>
     </div>
   </div>
 
-  <!-- BOTTOM NAV -->
   <nav class="bottom-nav">
-    <button class="nav-item active" onclick="switchTab('calendario', this)"><span>📅</span>Calendario</button>
-    <button class="nav-item" onclick="switchTab('inserisci', this)"><span>➕</span>Inserisci</button>
-    <button class="nav-item" onclick="switchTab('riepilogo', this)"><span>📊</span>Riepilogo</button>
+    <button class="nav-item active" onclick="switchTab('calendario', this)" aria-label="Calendario"><span>📅</span>Calendario</button>
+    <button class="nav-item" onclick="switchTab('inserisci', this)" aria-label="Inserisci Turno"><span>➕</span>Inserisci</button>
+    <button class="nav-item" onclick="switchTab('riepilogo', this)" aria-label="Riepilogo"><span>📊</span>Riepilogo</button>
   </nav>
 
   <script>
@@ -302,7 +283,12 @@
       setTimeout(() => tb.classList.remove('show'), 3000);
     }
 
-    // Gestione indipendente chiusura tendina vs chiusura popup elimina
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
     function closeSheet() {
       document.getElementById('mainOverlay').classList.remove('show');
       document.getElementById('daySheet').classList.remove('show');
@@ -318,19 +304,28 @@
       document.getElementById('modalTitle').innerText = title;
       document.getElementById('modalDesc').innerText = desc;
       confirmCallback = callback;
-      // Mostriamo solo l'overlay dedicato alla conferma, lasciando intatto lo sfondo della tendina
       document.getElementById('confirmOverlay').classList.add('show');
       document.getElementById('confirmModal').classList.add('show');
     }
     document.getElementById('modalConfirmBtn').onclick = () => { if(confirmCallback) confirmCallback(); closeConfirmModal(); };
 
-    let isDark = localStorage.getItem('theme_v8') === 'dark';
+    function safeLoadJSON(key, fallback) {
+      try {
+        const raw = localStorage.getItem(key);
+        return raw ? JSON.parse(raw) : fallback;
+      } catch (e) {
+        console.error(`Dati corrotti per la chiave "${key}", ripristino default.`, e);
+        return fallback;
+      }
+    }
+
+    let isDark = localStorage.getItem('theme_v9') === 'dark';
     function applyTheme() {
       if(isDark) document.documentElement.setAttribute('data-theme', 'dark');
       else document.documentElement.removeAttribute('data-theme');
     }
     function toggleTheme() {
-      isDark = !isDark; localStorage.setItem('theme_v8', isDark ? 'dark' : 'light');
+      isDark = !isDark; localStorage.setItem('theme_v9', isDark ? 'dark' : 'light');
       applyTheme();
       if(document.getElementById('view-riepilogo').classList.contains('active')) renderRiepilogoMensile(); 
     }
@@ -353,34 +348,52 @@
 
     // --- LOGICA DATI ---
     document.getElementById('data-turno').valueAsDate = new Date();
-    let turni = JSON.parse(localStorage.getItem('mieiTurni_v8')) || [];
-    let modelli = JSON.parse(localStorage.getItem('mieiModelli_v8')) || [];
-    let impostazioni = JSON.parse(localStorage.getItem('mieImpostazioni_v8')) || { 
+    
+    let turni = safeLoadJSON('mieiTurni_v9', []);
+    let modelli = safeLoadJSON('mieiModelli_v9', []);
+    let impostazioni = safeLoadJSON('mieImpostazioni_v9', { 
       pagaBase: 6.23, monteOre: 40, inizioNotte: '01:00', fineNotte: '07:00',
       percStraordinario: 20, percNotturno: 20, percFestivo: 55, percRiposo: 75, percDomenica: 10, bonusFestivo: 25
+    });
+
+    const configMap = {
+      'paga-base': 'pagaBase', 'monte-ore': 'monteOre', 'inizio-notte': 'inizioNotte', 'fine-notte': 'fineNotte',
+      'perc-straordinario': 'percStraordinario', 'perc-notturno': 'percNotturno', 'perc-festivo': 'percFestivo', 
+      'perc-riposo': 'percRiposo', 'perc-domenica': 'percDomenica', 'bonus-festivo': 'bonusFestivo'
     };
 
-    ['paga-base', 'monte-ore', 'inizio-notte', 'fine-notte', 'perc-straordinario', 'perc-notturno', 'perc-festivo', 'perc-riposo', 'perc-domenica', 'bonus-festivo'].forEach(id => {
-      let key = id.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
-      if(document.getElementById(id)) document.getElementById(id).value = impostazioni[key];
+    Object.keys(configMap).forEach(id => {
+      if(document.getElementById(id)) document.getElementById(id).value = impostazioni[configMap[id]];
     });
 
     function salvaImpostazioni() {
-      ['paga-base', 'monte-ore', 'inizio-notte', 'fine-notte', 'perc-straordinario', 'perc-notturno', 'perc-festivo', 'perc-riposo', 'perc-domenica', 'bonus-festivo'].forEach(id => {
-        let key = id.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
+      Object.keys(configMap).forEach(id => {
         let val = document.getElementById(id).value;
-        impostazioni[key] = id.includes('notte') ? val : parseFloat(val) || 0;
+        impostazioni[configMap[id]] = id.includes('notte') ? val : parseFloat(val) || 0;
       });
-      localStorage.setItem('mieImpostazioni_v8', JSON.stringify(impostazioni));
+      localStorage.setItem('mieImpostazioni_v9', JSON.stringify(impostazioni));
       showToast("Impostazioni salvate", "⚙️");
       aggiornaTutto();
     }
 
     function timeToMinutes(ts) { const [h, m] = ts.split(':').map(Number); return h * 60 + m; }
     
+    // Algoritmo di Gauss per il calcolo dinamico della Pasquetta
+    function getPasquetta(year) {
+      const a = year % 19, b = Math.floor(year / 100), c = year % 100;
+      const d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25), g = Math.floor((b - f + 1) / 3);
+      const h = (19 * a + b - d - g + 15) % 30, i = Math.floor(c / 4), k = c % 4;
+      const l = (32 + 2 * e + 2 * i - h - k) % 7, m = Math.floor((a + 11 * h + 22 * l) / 451);
+      const month = Math.floor((h + l - 7 * m + 114) / 31), day = ((h + l - 7 * m + 114) % 31) + 1;
+      let date = new Date(year, month - 1, day);
+      date.setDate(date.getDate() + 1); // Pasquetta è il giorno dopo Pasqua
+      return `${date.getDate()}-${date.getMonth() + 1}`;
+    }
+
     function isFestivo(dObj) {
-      const d = dObj.getDate(), m = dObj.getMonth() + 1;
-      return ["1-1", "6-1", "25-4", "1-5", "2-6", "15-8", "1-11", "8-12", "25-12", "26-12"].includes(`${d}-${m}`);
+      const d = dObj.getDate(), m = dObj.getMonth() + 1, y = dObj.getFullYear();
+      const fissi = ["1-1", "6-1", "25-4", "1-5", "2-6", "15-8", "1-11", "8-12", "25-12", "26-12"];
+      return fissi.includes(`${d}-${m}`) || `${d}-${m}` === getPasquetta(y);
     }
 
     // --- MODELLI (TEMPLATES) ---
@@ -393,17 +406,24 @@
 
       if(!nome || !inizio || !fine) return showToast("Inserisci nome e orari", "⚠️");
 
-      modelli.push({ id: Date.now(), nome, inizio, fine, pausa, tipo });
-      localStorage.setItem('mieiModelli_v8', JSON.stringify(modelli));
+      const idx = modelli.findIndex(m => m.nome.toLowerCase() === nome.toLowerCase());
+      if(idx !== -1) {
+        modelli[idx] = { ...modelli[idx], inizio, fine, pausa, tipo };
+        showToast("Modello aggiornato", "💾");
+      } else {
+        modelli.push({ id: Date.now() + Math.random(), nome, inizio, fine, pausa, tipo });
+        showToast("Modello salvato", "💾");
+      }
+      
+      localStorage.setItem('mieiModelli_v9', JSON.stringify(modelli));
       document.getElementById('nome-modello').value = '';
-      showToast("Modello salvato", "💾");
       renderModelli();
     }
 
     function eliminaModello(id, event) {
       event.stopPropagation();
       modelli = modelli.filter(m => m.id !== id);
-      localStorage.setItem('mieiModelli_v8', JSON.stringify(modelli));
+      localStorage.setItem('mieiModelli_v9', JSON.stringify(modelli));
       renderModelli();
       showToast("Modello eliminato", "🗑️");
     }
@@ -435,9 +455,9 @@
       modelli.forEach(m => {
         html += `
           <div class="modello-card" onclick="applicaModello(${m.id})">
-            <strong>${m.nome}</strong>
+            <strong>${escapeHtml(m.nome)}</strong>
             <span>${m.inizio} - ${m.fine}</span>
-            <div class="modello-del" onclick="eliminaModello(${m.id}, event)">×</div>
+            <div class="modello-del" onclick="eliminaModello(${m.id}, event)" aria-label="Elimina Modello">×</div>
           </div>
         `;
       });
@@ -446,63 +466,81 @@
 
     // --- SALVATAGGIO TURNO ---
     function salvaTurno() {
-      const dStr = document.getElementById('data-turno').value;
-      const iStr = document.getElementById('ora-inizio').value;
-      const fStr = document.getElementById('ora-fine').value;
-      const p = parseInt(document.getElementById('pausa').value) || 0;
+      const dataStr = document.getElementById('data-turno').value;
+      const inizioStr = document.getElementById('ora-inizio').value;
+      const fineStr = document.getElementById('ora-fine').value;
+      const pausa = parseInt(document.getElementById('pausa').value) || 0;
       const tipo = document.getElementById('tipo-giornata').value;
 
-      if(!dStr || !iStr || !fStr) return showToast("Compila tutti i campi!", "⚠️");
-
-      let iMin = timeToMinutes(iStr), fMin = timeToMinutes(fStr), dObj = new Date(dStr);
+      if(!dataStr || !inizioStr || !fineStr) return showToast("Compila tutti i campi!", "⚠️");
       
-      let bG1 = 'normale';
-      if (tipo !== 'normale') bG1 = tipo;
-      else if (isFestivo(dObj)) bG1 = 'festivo';
-      else if (dObj.getDay() === 0) bG1 = 'domenica';
-
-      if (fMin > iMin) {
-        calcolaF(dStr, iMin, fMin, p, bG1, iStr, fStr);
-      } else {
-        calcolaF(dStr, iMin, 1440, p, bG1, iStr, "24:00"); 
-        let dObj2 = new Date(dObj); dObj2.setDate(dObj2.getDate() + 1);
-        let dStr2 = dObj2.toISOString().split('T')[0];
-        
-        let bG2 = 'normale';
-        if (tipo === 'riposo_mancato') bG2 = 'riposo_mancato';
-        else if (isFestivo(dObj2)) bG2 = 'festivo';
-        else if (dObj2.getDay() === 0) bG2 = 'domenica';
-
-        calcolaF(dStr2, 0, fMin, 0, bG2, "00:00", fStr);
+      if (inizioStr === fineStr) {
+        return showToast("Ora inizio e fine coincidono: controlla l'orario", "⚠️");
       }
-      localStorage.setItem('mieiTurni_v8', JSON.stringify(turni));
+
+      let inizioMinuti = timeToMinutes(inizioStr), fineMinuti = timeToMinutes(fineStr), dataObj = new Date(dataStr);
+      const durataMin = fineMinuti > inizioMinuti ? (fineMinuti - inizioMinuti) : (1440 - inizioMinuti + fineMinuti);
+      
+      if (pausa >= durataMin) {
+        return showToast("La pausa non può essere maggiore o uguale al turno", "⚠️");
+      }
+
+      let badgeGiorno1 = 'normale';
+      if (tipo !== 'normale') badgeGiorno1 = tipo;
+      else if (isFestivo(dataObj)) badgeGiorno1 = 'festivo';
+      else if (dataObj.getDay() === 0) badgeGiorno1 = 'domenica';
+
+      if (fineMinuti > inizioMinuti) {
+        calcolaFrammento(dataStr, inizioMinuti, fineMinuti, pausa, badgeGiorno1, inizioStr, fineStr);
+      } else {
+        calcolaFrammento(dataStr, inizioMinuti, 1440, pausa, badgeGiorno1, inizioStr, "24:00"); 
+        let dataObj2 = new Date(dataObj); dataObj2.setDate(dataObj2.getDate() + 1);
+        let dataStr2 = dataObj2.toISOString().split('T')[0];
+        
+        let badgeGiorno2 = 'normale';
+        if (tipo === 'riposo_mancato') badgeGiorno2 = 'riposo_mancato';
+        else if (isFestivo(dataObj2)) badgeGiorno2 = 'festivo';
+        else if (dataObj2.getDay() === 0) badgeGiorno2 = 'domenica';
+
+        calcolaFrammento(dataStr2, 0, fineMinuti, 0, badgeGiorno2, "00:00", fineStr);
+      }
+      
+      localStorage.setItem('mieiTurni_v9', JSON.stringify(turni));
       aggiornaTutto();
       showToast("Turno registrato con successo!");
-      document.getElementById('ora-inizio').value = ''; document.getElementById('ora-fine').value = ''; document.getElementById('pausa').value = '0';
+      document.getElementById('ora-inizio').value = ''; 
+      document.getElementById('ora-fine').value = ''; 
+      document.getElementById('pausa').value = '0';
     }
 
-    function calcolaF(data, sMin, eMin, p, badge, sStr, eStr) {
-      if (sMin >= eMin) return;
-      const nI = timeToMinutes(impostazioni.inizioNotte), nF = timeToMinutes(impostazioni.fineNotte);
-      let di = 0, no = 0;
-      for (let m = sMin; m < eMin; m++) {
-        let isN = (nI > nF) ? (m >= nI || m < nF) : (m >= nI && m < nF);
-        isN ? no++ : di++;
+    function calcolaFrammento(data, startMin, endMin, pausa, badge, strInizio, strFine) {
+      if (startMin >= endMin) return;
+      const notteInizio = timeToMinutes(impostazioni.inizioNotte), notteFine = timeToMinutes(impostazioni.fineNotte);
+      let minutiDiurni = 0, minutiNotturni = 0;
+      for (let m = startMin; m < endMin; m++) {
+        let isNotte = (notteInizio > notteFine) ? (m >= notteInizio || m < notteFine) : (m >= notteInizio && m < notteFine);
+        isNotte ? minutiNotturni++ : minutiDiurni++;
       }
-      if (di >= p) di -= p; else { p -= di; di = 0; no -= p; }
-      if(no < 0) no = 0;
-      turni.push({ id: Date.now()+Math.random(), data: data, strInizio: sStr, strFine: eStr, oreTotali: +((di+no)/60).toFixed(4), oreDiurne: +(di/60).toFixed(4), oreNotturne: +(no/60).toFixed(4), badge: badge });
+      if (minutiDiurni >= pausa) minutiDiurni -= pausa; 
+      else { pausa -= minutiDiurni; minutiDiurni = 0; minutiNotturni -= pausa; }
+      if(minutiNotturni < 0) minutiNotturni = 0;
+      
+      turni.push({ 
+        id: Date.now() + Math.random(), data: data, strInizio: strInizio, strFine: strFine, 
+        oreTotali: +((minutiDiurni + minutiNotturni)/60).toFixed(4), 
+        oreDiurne: +(minutiDiurni/60).toFixed(4), 
+        oreNotturne: +(minutiNotturni/60).toFixed(4), 
+        badge: badge 
+      });
     }
 
     function richiediEliminazione(id) {
       showConfirm("Elimina Turno", "Vuoi cancellare questo inserimento?", () => {
         turni = turni.filter(t => t.id !== id);
-        localStorage.setItem('mieiTurni_v8', JSON.stringify(turni));
-        // chiudiamo il confirm, la tendina rimane aperta e si aggiorna
+        localStorage.setItem('mieiTurni_v9', JSON.stringify(turni));
         closeConfirmModal();
         showToast("Turno eliminato", "🗑️");
         aggiornaTutto();
-        // Aggiorniamo la tendina se è ancora aperta su una data specifica (leggiamo la data dal titolo)
         let testoData = document.getElementById('sheetDate').innerText.replace("Turni del ", "");
         if(testoData && testoData.includes("/")) {
           let [g, m, y] = testoData.split("/");
@@ -511,7 +549,7 @@
       });
     }
 
-    // --- CALENDARIO E INSERIMENTO RAPIDO ---
+    // --- CALENDARIO ---
     let cDate = new Date();
     function cambiaMese(step) { cDate.setMonth(cDate.getMonth() + step); renderCalendar(); }
 
@@ -560,7 +598,6 @@
         });
       }
       
-      // Bottone scorciatoia inserimento
       html += `
         <button onclick="vaiAInserimento('${dStr}')" style="margin-top: 15px; background: transparent; color: var(--accent); border: 2px dashed var(--accent); box-shadow: none;">
           ➕ Inserisci Turno Qui
@@ -573,11 +610,8 @@
     }
 
     function vaiAInserimento(dStr) {
-      // Imposta la data nel campo del form
       document.getElementById('data-turno').value = dStr;
-      // Chiude la tendina
       closeSheet();
-      // Trova il bottone della navbar "Inserisci" (il secondo) e attiva lo switch
       const btnInserisci = document.querySelectorAll('.nav-item')[1];
       switchTab('inserisci', btnInserisci);
     }
@@ -595,7 +629,6 @@
 
       const tM = turni.filter(t => new Date(t.data).getFullYear() === y && new Date(t.data).getMonth() === m);
       let tO = 0, tD = 0, tN = 0, tF = 0, tDom = 0, tR = 0;
-      
       let giorniFestiviUnici = new Set();
 
       tM.forEach(t => { 
@@ -605,11 +638,11 @@
         if(t.badge==='riposo_mancato') tR+=t.oreTotali; 
       });
 
-      let sett = tM.length > 0 ? 4.33 : 0;
-      let sM = tO > (impostazioni.monteOre * sett) ? (tO - (impostazioni.monteOre * sett)) : 0;
+      const giorniNelMese = new Date(y, m + 1, 0).getDate();
+      const stimaStraordinariMensili = (giorniNelMese / 7) * impostazioni.monteOre;
+      let sM = tO > stimaStraordinariMensili ? (tO - stimaStraordinariMensili) : 0;
       let oN = tO > sM ? (tO - sM) : tO;
 
-      // Aggiorna Tabelle
       document.getElementById('tabella-ore-mensili').innerHTML = `
         <tr><th>Tipologia</th><th>Ore</th></tr>
         <tr><td>Lavorate (Totali)</td><td>${tO.toFixed(2)}h</td></tr>
@@ -617,7 +650,7 @@
         <tr><td>Notturne (Fascia ${impostazioni.inizioNotte}-${impostazioni.fineNotte})</td><td>${tN.toFixed(2)}h</td></tr>
         <tr><td>Domeniche</td><td>${tDom.toFixed(2)}h</td></tr>
         <tr><td>Festivi Fissi</td><td>${tF.toFixed(2)}h</td></tr>
-        <tr><td>Straordinari Oltre Contratto</td><td>${sM.toFixed(2)}h</td></tr>
+        <tr><td>Straordinari (Oltre la media mese)</td><td>${sM.toFixed(2)}h</td></tr>
       `;
 
       let p = impostazioni.pagaBase;
@@ -641,30 +674,36 @@
         <tr style="border-top:2px solid var(--accent); color:var(--accent);"><td>NETTO STIMATO</td><td>€ ${tot.toFixed(2)}</td></tr>
       `;
 
-      // Aggiorna Grafico
-      const ctx = document.getElementById('myChart');
-      if (myChart) myChart.destroy();
+      const chartData = [oN.toFixed(1), tN.toFixed(1), (sM+tF+tDom+tR).toFixed(1)];
       const textColor = getComputedStyle(document.documentElement).getPropertyValue('--text-main');
-      myChart = new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-          labels: ['Base', 'Notturne', 'Extra (Str/Fest/Dom)'],
-          datasets: [{
-            data: [oN.toFixed(1), tN.toFixed(1), (sM+tF+tDom+tR).toFixed(1)],
-            backgroundColor: ['#007aff', '#5856d6', '#ff9500'],
-            borderWidth: 0, hoverOffset: 5
-          }]
-        },
-        options: {
-          responsive: true, maintainAspectRatio: false,
-          plugins: { legend: { position: 'bottom', labels: { color: textColor, font: { family: '-apple-system', size: 12 } } } }, cutout: '65%'
-        }
-      });
+
+      if (myChart) {
+        myChart.data.datasets[0].data = chartData;
+        myChart.options.plugins.legend.labels.color = textColor;
+        myChart.update();
+      } else {
+        const ctx = document.getElementById('myChart');
+        myChart = new Chart(ctx, {
+          type: 'doughnut',
+          data: {
+            labels: ['Base', 'Notturne', 'Extra (Str/Fest/Dom)'],
+            datasets: [{
+              data: chartData,
+              backgroundColor: ['#007aff', '#5856d6', '#ff9500'],
+              borderWidth: 0, hoverOffset: 5
+            }]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom', labels: { color: textColor, font: { family: '-apple-system', size: 12 } } } }, cutout: '65%'
+          }
+        });
+      }
     }
 
     function richiediCancellazione() {
       showConfirm("Inizializza App", "Sei sicuro di voler cancellare tutti i turni salvati? Non potrai recuperarli.", () => {
-        turni = []; localStorage.removeItem('mieiTurni_v8');
+        turni = []; localStorage.removeItem('mieiTurni_v9');
         aggiornaTutto(); showToast("Dati cancellati", "🧹");
       });
     }
