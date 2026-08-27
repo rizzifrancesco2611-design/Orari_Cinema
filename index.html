@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>I Miei Orari V12</title>
+  <title>I Miei Orari V13</title>
   
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" crossorigin="anonymous"></script>
   
@@ -322,13 +322,13 @@
       }
     }
 
-    let isDark = localStorage.getItem('theme_v12') === 'dark';
+    let isDark = localStorage.getItem('theme_v13') === 'dark';
     function applyTheme() {
       if(isDark) document.documentElement.setAttribute('data-theme', 'dark');
       else document.documentElement.removeAttribute('data-theme');
     }
     function toggleTheme() {
-      isDark = !isDark; localStorage.setItem('theme_v12', isDark ? 'dark' : 'light');
+      isDark = !isDark; localStorage.setItem('theme_v13', isDark ? 'dark' : 'light');
       applyTheme();
       if(document.getElementById('view-riepilogo').classList.contains('active')) renderRiepilogoMensile(); 
     }
@@ -351,12 +351,18 @@
 
     document.getElementById('data-turno').valueAsDate = new Date();
     
-    let turni = safeLoadJSON('mieiTurni_v12', safeLoadJSON('mieiTurni_v11', safeLoadJSON('mieiTurni_v10', [])));
-    let modelli = safeLoadJSON('mieiModelli_v12', safeLoadJSON('mieiModelli_v11', safeLoadJSON('mieiModelli_v10', [])));
-    let impostazioni = safeLoadJSON('mieImpostazioni_v12', safeLoadJSON('mieImpostazioni_v11', safeLoadJSON('mieImpostazioni_v10', { 
+    // SISTEMA DI RECUPERO A CATENA (Controlla v13, v12, v11, v10, v9 ed eventuali chiavi generiche)
+    let turni = safeLoadJSON('mieiTurni_v13', safeLoadJSON('mieiTurni_v12', safeLoadJSON('mieiTurni_v11', safeLoadJSON('mieiTurni_v10', safeLoadJSON('mieiTurni_v9', safeLoadJSON('mieiTurni_v8', safeLoadJSON('mieiTurni', [])))))));
+    let modelli = safeLoadJSON('mieiModelli_v13', safeLoadJSON('mieiModelli_v12', safeLoadJSON('mieiModelli_v11', safeLoadJSON('mieiModelli_v10', safeLoadJSON('mieiModelli_v9', safeLoadJSON('mieiModelli_v8', safeLoadJSON('mieiModelli', [])))))));
+    let impostazioni = safeLoadJSON('mieImpostazioni_v13', safeLoadJSON('mieImpostazioni_v12', safeLoadJSON('mieImpostazioni_v11', safeLoadJSON('mieImpostazioni_v10', safeLoadJSON('mieImpostazioni_v9', safeLoadJSON('mieImpostazioni_v8', safeLoadJSON('mieImpostazioni', { 
       pagaBase: 6.23, monteOre: 20, inizioNotte: '01:00', fineNotte: '07:00',
       percStraordinario: 20, percNotturno: 20, percFestivo: 55, percRiposo: 75, percDomenica: 10, bonusFestivo: 25
-    })));
+    })))))));
+
+    // Salva subito i dati recuperati sulla chiave v13 per sicurezza futura
+    localStorage.setItem('mieiTurni_v13', JSON.stringify(turni));
+    localStorage.setItem('mieiModelli_v13', JSON.stringify(modelli));
+    localStorage.setItem('mieImpostazioni_v13', JSON.stringify(impostazioni));
 
     const configMap = {
       'paga-base': 'pagaBase', 'monte-ore': 'monteOre', 'inizio-notte': 'inizioNotte', 'fine-notte': 'fineNotte',
@@ -379,7 +385,7 @@
           impostazioni[configMap[id]] = parseFloat(val) || 0;
         }
       });
-      localStorage.setItem('mieImpostazioni_v12', JSON.stringify(impostazioni));
+      localStorage.setItem('mieImpostazioni_v13', JSON.stringify(impostazioni));
       showToast("Impostazioni salvate", "⚙️");
       aggiornaTutto();
     }
@@ -430,7 +436,7 @@
         showToast("Modello salvato", "💾");
       }
       
-      localStorage.setItem('mieiModelli_v12', JSON.stringify(modelli));
+      localStorage.setItem('mieiModelli_v13', JSON.stringify(modelli));
       document.getElementById('nome-modello').value = '';
       renderModelli();
     }
@@ -438,7 +444,7 @@
     function eliminaModello(id, event) {
       event.stopPropagation();
       modelli = modelli.filter(m => m.id !== id);
-      localStorage.setItem('mieiModelli_v12', JSON.stringify(modelli));
+      localStorage.setItem('mieiModelli_v13', JSON.stringify(modelli));
       renderModelli();
       showToast("Modello eliminato", "🗑️");
     }
@@ -457,7 +463,7 @@
         let sA = timeToMinutes(a.inizio), sB = timeToMinutes(b.inizio);
         if(sA !== sB) return sA - sB;
         let dA = timeToMinutes(a.fine) - sA; if(dA<0) dA+=1440;
-        let dB = timeToMinutes(a.fine) - sB; if(dB<0) dB+=1440;
+        let dB = timeToMinutes(b.fine) - sB; if(dB<0) dB+=1440;
         return dA - dB;
       });
 
@@ -519,7 +525,7 @@
         calcolaFrammento(dataStr2, 0, fineMinuti, 0, badgeGiorno2, "00:00", fineStr);
       }
       
-      localStorage.setItem('mieiTurni_v12', JSON.stringify(turni));
+      localStorage.setItem('mieiTurni_v13', JSON.stringify(turni));
       aggiornaTutto();
       showToast("Turno registrato con successo!");
       document.getElementById('ora-inizio').value = ''; 
@@ -551,7 +557,7 @@
     function richiediEliminazione(id) {
       showConfirm("Elimina Turno", "Vuoi cancellare questo inserimento?", () => {
         turni = turni.filter(t => t.id !== id);
-        localStorage.setItem('mieiTurni_v12', JSON.stringify(turni));
+        localStorage.setItem('mieiTurni_v13', JSON.stringify(turni));
         closeConfirmModal();
         showToast("Turno eliminato", "🗑️");
         aggiornaTutto();
@@ -572,7 +578,7 @@
       document.body.appendChild(downloadAnchorNode); 
       downloadAnchorNode.click();
       downloadAnchorNode.remove();
-      showToast("Backup scaricato sul dispositivo!", "💾");
+      showToast("Backup scaricato!", "💾");
     }
 
     function importaDati(event) {
@@ -586,9 +592,9 @@
           if (imported.modelli) modelli = imported.modelli;
           if (imported.impostazioni) impostazioni = imported.impostazioni;
           
-          localStorage.setItem('mieiTurni_v12', JSON.stringify(turni));
-          localStorage.setItem('mieiModelli_v12', JSON.stringify(modelli));
-          localStorage.setItem('mieImpostazioni_v12', JSON.stringify(impostazioni));
+          localStorage.setItem('mieiTurni_v13', JSON.stringify(turni));
+          localStorage.setItem('mieiModelli_v13', JSON.stringify(modelli));
+          localStorage.setItem('mieImpostazioni_v13', JSON.stringify(impostazioni));
           
           Object.keys(configMap).forEach(id => {
             if(document.getElementById(id)) document.getElementById(id).value = impostazioni[configMap[id]];
@@ -597,7 +603,7 @@
           aggiornaTutto();
           showToast("Dati ripristinati con successo!", "✅");
         } catch(err) {
-          showToast("Il file non è un backup valido", "❌");
+          showToast("File non valido", "❌");
         }
       };
       reader.readAsText(file);
@@ -748,7 +754,6 @@
       `;
 
       let p = impostazioni.pagaBase;
-      // FIX CORRETTO: Le maggiorazioni ora si applicano sommandole alla tariffa base intera (es. 10% -> 1.10)
       let cB = oN * p;
       let cS = sM * p * (1 + impostazioni.percStraordinario / 100);
       let cN = tN * p * (1 + impostazioni.percNotturno / 100);
@@ -797,9 +802,13 @@
     }
 
     function richiediCancellazione() {
-      showConfirm("Inizializza App", "Sei sicuro di voler cancellare tutti i turni salvati? Non potrai recuperarli senza un backup.", () => {
-        turni = []; localStorage.removeItem('mieiTurni_v12');
-        aggiornaTutto(); showToast("Dati cancellati", "🧹");
+      showConfirm("Inizializza App", "Sei sicuro di voler cancellare tutti i turni salvati?", () => {
+        turni = []; 
+        localStorage.removeItem('mieiTurni_v13');
+        localStorage.removeItem('mieiTurni_v12');
+        localStorage.removeItem('mieiTurni_v11');
+        aggiornaTutto(); 
+        showToast("Dati cancellati", "🧹");
       });
     }
 
