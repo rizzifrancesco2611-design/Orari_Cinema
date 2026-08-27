@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>I Miei Orari V6</title>
-  <!-- Import Chart.js per i grafici -->
+  <title>I Miei Orari V7</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     /* VARIABILI TEMA */
@@ -20,6 +19,7 @@
       --danger: #ff3b30;
       --badge-festivo: #ff9500;
       --badge-riposo: #ff2d55;
+      --badge-domenica: #5856d6;
       --shadow: rgba(0,0,0,0.08);
       --nav-bg: rgba(255, 255, 255, 0.85);
       --overlay: rgba(0,0,0,0.4);
@@ -67,6 +67,7 @@
     button:active { transform: scale(0.96); }
     button.danger { background: var(--danger); color: white; }
     button.outline { background: transparent; border: 1px solid var(--danger); color: var(--danger); }
+    button.btn-sm { width: auto; padding: 8px 12px; font-size: 13px; margin-top: 0; }
 
     /* CALENDARIO */
     .calendar-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
@@ -96,19 +97,15 @@
     .nav-item.active { color: var(--accent); }
     .nav-item.active span { transform: scale(1.15); }
 
-    /* TOAST NOTIFICATION */
+    /* TOAST E MODAL */
     .toast { position: fixed; top: -100px; left: 50%; transform: translateX(-50%); background: var(--card-bg); color: var(--text-main); padding: 14px 24px; border-radius: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); font-weight: 600; font-size: 14px; z-index: 2000; transition: top 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; align-items: center; gap: 10px; border: 1px solid var(--border);}
     .toast.show { top: 40px; }
-    .toast-icon { font-size: 18px; }
-
-    /* MODAL CUSTOM */
+    
     .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--overlay); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); z-index: 1500; opacity: 0; pointer-events: none; transition: 0.3s; }
     .overlay.show { opacity: 1; pointer-events: auto; }
     .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.9); background: var(--card-bg); padding: 25px; border-radius: 20px; width: 85%; max-width: 320px; z-index: 1600; opacity: 0; pointer-events: none; transition: 0.3s; box-shadow: 0 20px 40px rgba(0,0,0,0.2); text-align: center;}
     .modal.show { opacity: 1; pointer-events: auto; transform: translate(-50%, -50%) scale(1); }
-    .modal h3 { margin-top: 0; margin-bottom: 10px; font-size: 18px; }
-    .modal p { color: var(--text-muted); font-size: 14px; margin-bottom: 20px; }
-    .modal-actions { display: flex; gap: 10px; }
+    .modal-actions { display: flex; gap: 10px; margin-top: 15px;}
     .modal-actions button { margin-top: 0; }
 
     /* BOTTOM SHEET */
@@ -117,16 +114,26 @@
     .sheet-handle { width: 40px; height: 5px; background: var(--border); border-radius: 3px; margin: 0 auto 20px auto; }
     
     .turno-list-item { background: var(--input-bg); padding: 15px; border-radius: 14px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--accent); }
+    
     .badge { color: white; padding: 3px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; margin-left: 6px; text-transform: uppercase;}
     .badge-festivo { background: var(--badge-festivo); }
+    .badge-domenica { background: var(--badge-domenica); }
     .badge-riposo { background: var(--badge-riposo); }
+
+    /* TEMPLATE (MODELLI RAPIDI) */
+    .modelli-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; margin-top: 10px; }
+    .modello-card { background: var(--input-bg); border: 1px solid var(--border); padding: 12px; border-radius: 12px; cursor: pointer; display: flex; flex-direction: column; gap: 5px; transition: 0.2s;}
+    .modello-card:active { transform: scale(0.95); border-color: var(--accent);}
+    .modello-card strong { font-size: 14px; color: var(--accent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+    .modello-card span { font-size: 12px; color: var(--text-muted); }
+    .modello-del { color: var(--danger); font-size: 18px; align-self: flex-end; padding: 0 5px; margin-top: -20px; }
   </style>
 </head>
 <body>
 
   <!-- TOAST NOTIFICATION -->
   <div class="toast" id="toastBox">
-    <span class="toast-icon">✅</span>
+    <span class="toast-icon" id="toastIcon">✅</span>
     <span id="toastMsg">Azione completata</span>
   </div>
 
@@ -134,7 +141,7 @@
   <div class="overlay" id="mainOverlay" onclick="closeModals()"></div>
   <div class="modal" id="confirmModal">
     <h3 id="modalTitle">Attenzione</h3>
-    <p id="modalDesc">Sei sicuro di voler procedere?</p>
+    <p id="modalDesc" style="color: var(--text-muted); font-size: 14px; margin-bottom: 20px;">Sei sicuro di voler procedere?</p>
     <div class="modal-actions">
       <button class="outline" onclick="closeModals()">Annulla</button>
       <button class="danger" id="modalConfirmBtn">Conferma</button>
@@ -173,7 +180,7 @@
     </div>
   </div>
 
-  <!-- 2. INSERISCI TURNI -->
+  <!-- 2. INSERISCI TURNI E MODELLI -->
   <div id="view-inserisci" class="view-section">
     <div class="card">
       <h2>Nuovo Turno</h2>
@@ -187,11 +194,26 @@
       <input type="number" id="pausa" value="0">
       <label>Contesto (Opzionale)</label>
       <select id="tipo-giornata">
-        <option value="normale">Giorno Lavorativo Normale</option>
-        <option value="festivo">Giorno Festivo</option>
+        <option value="normale">Automatico (Normale / Festivo / Dom)</option>
         <option value="riposo_mancato">Riposo Non Goduto (7° Giorno)</option>
       </select>
-      <button onclick="salvaTurno()">Salva Ora</button>
+      
+      <div style="display: flex; gap: 10px; align-items: flex-end;">
+        <div style="flex-grow: 1;">
+          <label>Nome Modello (Opzionale per salvare)</label>
+          <input type="text" id="nome-modello" placeholder="Es. Mattina Esterni">
+        </div>
+        <button class="outline btn-sm" style="margin-bottom: 5px; height: 48px;" onclick="salvaModello()">Salva <br>Modello</button>
+      </div>
+
+      <button onclick="salvaTurno()">Registra Ore nel Calendario</button>
+    </div>
+
+    <div class="card">
+      <h2>Modelli Salvati (Incolla Rapido)</h2>
+      <div class="modelli-grid" id="modelli-container">
+        <!-- Generato da JS -->
+      </div>
     </div>
   </div>
 
@@ -204,7 +226,7 @@
         <button onclick="cambiaMeseRiepilogo(1)">▶</button>
       </div>
       
-      <!-- GRAFICO INTERATTIVO -->
+      <!-- GRAFICO -->
       <div class="chart-container">
         <canvas id="myChart"></canvas>
       </div>
@@ -230,40 +252,42 @@
         <option value="24">24 ore</option>
         <option value="20">20 ore</option>
       </select>
+      
+      <h3 style="font-size: 14px; margin-top: 20px; border-bottom: 1px solid var(--border); padding-bottom: 4px;">Fascia Notturna</h3>
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-        <div><label>Inizio Notte</label><input type="time" id="inizio-notte" value="22:00" onchange="salvaImpostazioni()"></div>
-        <div><label>Fine Notte</label><input type="time" id="fine-notte" value="06:00" onchange="salvaImpostazioni()"></div>
+        <div><label>Inizio</label><input type="time" id="inizio-notte" value="01:00" onchange="salvaImpostazioni()"></div>
+        <div><label>Fine</label><input type="time" id="fine-notte" value="07:00" onchange="salvaImpostazioni()"></div>
       </div>
-      <h3 style="font-size: 14px; margin-top: 15px; border-bottom: 1px solid var(--border); padding-bottom: 4px;">Maggiorazioni (%)</h3>
+
+      <h3 style="font-size: 14px; margin-top: 20px; border-bottom: 1px solid var(--border); padding-bottom: 4px;">Maggiorazioni (%)</h3>
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-        <div><label>Straordinari</label><input type="number" id="perc-straordinario" value="25" onchange="salvaImpostazioni()"></div>
-        <div><label>Notturno</label><input type="number" id="perc-notturno" value="50" onchange="salvaImpostazioni()"></div>
-        <div><label>Festivo</label><input type="number" id="perc-festivo" value="50" onchange="salvaImpostazioni()"></div>
-        <div><label>Riposo</label><input type="number" id="perc-riposo" value="75" onchange="salvaImpostazioni()"></div>
+        <div><label>Domenica</label><input type="number" id="perc-domenica" value="10" onchange="salvaImpostazioni()"></div>
+        <div><label>Straordinari</label><input type="number" id="perc-straordinario" value="20" onchange="salvaImpostazioni()"></div>
+        <div><label>Notturno</label><input type="number" id="perc-notturno" value="20" onchange="salvaImpostazioni()"></div>
+        <div><label>Festivo</label><input type="number" id="perc-festivo" value="55" onchange="salvaImpostazioni()"></div>
       </div>
+
+      <h3 style="font-size: 14px; margin-top: 20px; border-bottom: 1px solid var(--border); padding-bottom: 4px;">Bonus Fissi (€)</h3>
+      <label>Bonus Festivo (Indennità fissa al giorno)</label>
+      <input type="number" id="bonus-festivo" step="1" value="25" onchange="salvaImpostazioni()">
+      
       <button class="outline" style="margin-top: 25px;" onclick="richiediCancellazione()">Inizializza App (Cancella Dati)</button>
     </div>
   </div>
 
   <!-- BOTTOM NAV -->
   <nav class="bottom-nav">
-    <button class="nav-item active" onclick="switchTab('calendario', this)">
-      <span>📅</span>Calendario
-    </button>
-    <button class="nav-item" onclick="switchTab('inserisci', this)">
-      <span>➕</span>Inserisci
-    </button>
-    <button class="nav-item" onclick="switchTab('riepilogo', this)">
-      <span>📊</span>Riepilogo
-    </button>
+    <button class="nav-item active" onclick="switchTab('calendario', this)"><span>📅</span>Calendario</button>
+    <button class="nav-item" onclick="switchTab('inserisci', this)"><span>➕</span>Inserisci</button>
+    <button class="nav-item" onclick="switchTab('riepilogo', this)"><span>📊</span>Riepilogo</button>
   </nav>
 
   <script>
-    // --- UI UX FUNZIONI (TOAST, MODALS, THEME) ---
+    // --- UI UX FUNZIONI ---
     function showToast(msg, icon="✅") {
       const tb = document.getElementById('toastBox');
       document.getElementById('toastMsg').innerText = msg;
-      document.querySelector('.toast-icon').innerText = icon;
+      document.getElementById('toastIcon').innerText = icon;
       tb.classList.add('show');
       setTimeout(() => tb.classList.remove('show'), 3000);
     }
@@ -282,39 +306,27 @@
       document.getElementById('mainOverlay').classList.add('show');
       document.getElementById('confirmModal').classList.add('show');
     }
-    
-    document.getElementById('modalConfirmBtn').onclick = () => {
-      if(confirmCallback) confirmCallback();
-      closeModals();
-    };
+    document.getElementById('modalConfirmBtn').onclick = () => { if(confirmCallback) confirmCallback(); closeModals(); };
 
-    let isDark = localStorage.getItem('theme_v6') === 'dark';
+    let isDark = localStorage.getItem('theme_v7') === 'dark';
     function applyTheme() {
       if(isDark) document.documentElement.setAttribute('data-theme', 'dark');
       else document.documentElement.removeAttribute('data-theme');
     }
     function toggleTheme() {
-      isDark = !isDark;
-      localStorage.setItem('theme_v6', isDark ? 'dark' : 'light');
+      isDark = !isDark; localStorage.setItem('theme_v7', isDark ? 'dark' : 'light');
       applyTheme();
-      if(document.getElementById('view-riepilogo').classList.contains('active')) renderRiepilogoMensile(); // Update chart colors
+      if(document.getElementById('view-riepilogo').classList.contains('active')) renderRiepilogoMensile(); 
     }
     applyTheme();
 
     function switchTab(tabName, el) {
-      document.querySelectorAll('.view-section').forEach(sec => {
-        sec.style.opacity = 0;
-        setTimeout(() => sec.classList.remove('active'), 200);
-      });
+      document.querySelectorAll('.view-section').forEach(sec => { sec.style.opacity = 0; setTimeout(() => sec.classList.remove('active'), 200); });
       document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
       
       setTimeout(() => {
         const newSec = document.getElementById('view-' + tabName);
-        newSec.classList.add('active');
-        // trigger reflow
-        void newSec.offsetWidth;
-        newSec.style.opacity = 1;
-        
+        newSec.classList.add('active'); void newSec.offsetWidth; newSec.style.opacity = 1;
         if(tabName === 'riepilogo') renderRiepilogoMensile();
       }, 200);
       
@@ -325,34 +337,99 @@
 
     // --- LOGICA DATI ---
     document.getElementById('data-turno').valueAsDate = new Date();
-    let turni = JSON.parse(localStorage.getItem('mieiTurni_v6')) || [];
-    let impostazioni = JSON.parse(localStorage.getItem('mieImpostazioni_v6')) || { 
-      pagaBase: 6.23, monteOre: 40, inizioNotte: '22:00', fineNotte: '06:00',
-      percStraordinario: 25, percNotturno: 50, percFestivo: 50, percRiposo: 75
+    let turni = JSON.parse(localStorage.getItem('mieiTurni_v7')) || [];
+    let modelli = JSON.parse(localStorage.getItem('mieiModelli_v7')) || [];
+    let impostazioni = JSON.parse(localStorage.getItem('mieImpostazioni_v7')) || { 
+      pagaBase: 6.23, monteOre: 40, inizioNotte: '01:00', fineNotte: '07:00',
+      percStraordinario: 20, percNotturno: 20, percFestivo: 55, percRiposo: 75, percDomenica: 10, bonusFestivo: 25
     };
 
-    ['paga-base', 'monte-ore', 'inizio-notte', 'fine-notte', 'perc-straordinario', 'perc-notturno', 'perc-festivo', 'perc-riposo'].forEach(id => {
+    ['paga-base', 'monte-ore', 'inizio-notte', 'fine-notte', 'perc-straordinario', 'perc-notturno', 'perc-festivo', 'perc-riposo', 'perc-domenica', 'bonus-festivo'].forEach(id => {
       let key = id.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
-      document.getElementById(id).value = impostazioni[key];
+      if(document.getElementById(id)) document.getElementById(id).value = impostazioni[key];
     });
 
     function salvaImpostazioni() {
-      ['paga-base', 'monte-ore', 'inizio-notte', 'fine-notte', 'perc-straordinario', 'perc-notturno', 'perc-festivo', 'perc-riposo'].forEach(id => {
+      ['paga-base', 'monte-ore', 'inizio-notte', 'fine-notte', 'perc-straordinario', 'perc-notturno', 'perc-festivo', 'perc-riposo', 'perc-domenica', 'bonus-festivo'].forEach(id => {
         let key = id.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
         let val = document.getElementById(id).value;
         impostazioni[key] = id.includes('notte') ? val : parseFloat(val) || 0;
       });
-      localStorage.setItem('mieImpostazioni_v6', JSON.stringify(impostazioni));
+      localStorage.setItem('mieImpostazioni_v7', JSON.stringify(impostazioni));
       showToast("Impostazioni salvate", "⚙️");
       aggiornaTutto();
     }
 
     function timeToMinutes(ts) { const [h, m] = ts.split(':').map(Number); return h * 60 + m; }
+    
     function isFestivo(dObj) {
       const d = dObj.getDate(), m = dObj.getMonth() + 1;
       return ["1-1", "6-1", "25-4", "1-5", "2-6", "15-8", "1-11", "8-12", "25-12", "26-12"].includes(`${d}-${m}`);
     }
 
+    // --- MODELLI (TEMPLATES) ---
+    function salvaModello() {
+      const nome = document.getElementById('nome-modello').value.trim();
+      const inizio = document.getElementById('ora-inizio').value;
+      const fine = document.getElementById('ora-fine').value;
+      const pausa = document.getElementById('pausa').value;
+      const tipo = document.getElementById('tipo-giornata').value;
+
+      if(!nome || !inizio || !fine) return showToast("Inserisci nome e orari", "⚠️");
+
+      modelli.push({ id: Date.now(), nome, inizio, fine, pausa, tipo });
+      localStorage.setItem('mieiModelli_v7', JSON.stringify(modelli));
+      document.getElementById('nome-modello').value = '';
+      showToast("Modello salvato", "💾");
+      renderModelli();
+    }
+
+    function eliminaModello(id, event) {
+      event.stopPropagation(); // Evita di "incollare" il modello quando lo si elimina
+      modelli = modelli.filter(m => m.id !== id);
+      localStorage.setItem('mieiModelli_v7', JSON.stringify(modelli));
+      renderModelli();
+      showToast("Modello eliminato", "🗑️");
+    }
+
+    function applicaModello(id) {
+      const mod = modelli.find(m => m.id === id);
+      document.getElementById('ora-inizio').value = mod.inizio;
+      document.getElementById('ora-fine').value = mod.fine;
+      document.getElementById('pausa').value = mod.pausa;
+      document.getElementById('tipo-giornata').value = mod.tipo;
+      showToast("Modello incollato", "📋");
+    }
+
+    function renderModelli() {
+      // Ordinamento: Prima per orario inizio, poi per durata minore
+      modelli.sort((a,b) => {
+        let sA = timeToMinutes(a.inizio), sB = timeToMinutes(b.inizio);
+        if(sA !== sB) return sA - sB;
+        let dA = timeToMinutes(a.fine) - sA; if(dA<0) dA+=1440;
+        let dB = timeToMinutes(b.fine) - sB; if(dB<0) dB+=1440;
+        return dA - dB;
+      });
+
+      const cont = document.getElementById('modelli-container');
+      if(modelli.length === 0) {
+        cont.innerHTML = "<p style='color:var(--text-muted); font-size:13px;'>Nessun modello salvato.</p>";
+        return;
+      }
+      let html = '';
+      modelli.forEach(m => {
+        html += `
+          <div class="modello-card" onclick="applicaModello(${m.id})">
+            <strong>${m.nome}</strong>
+            <span>${m.inizio} - ${m.fine}</span>
+            <div class="modello-del" onclick="eliminaModello(${m.id}, event)">×</div>
+          </div>
+        `;
+      });
+      cont.innerHTML = html;
+    }
+
+    // --- SALVATAGGIO TURNO ---
     function salvaTurno() {
       const dStr = document.getElementById('data-turno').value;
       const iStr = document.getElementById('ora-inizio').value;
@@ -363,7 +440,12 @@
       if(!dStr || !iStr || !fStr) return showToast("Compila tutti i campi!", "⚠️");
 
       let iMin = timeToMinutes(iStr), fMin = timeToMinutes(fStr), dObj = new Date(dStr);
-      let bG1 = (tipo !== 'normale') ? tipo : (isFestivo(dObj) ? 'festivo' : 'normale');
+      
+      // Assegnazione Automatica del Badge Giorno 1 (Festivo > Domenica > Normale)
+      let bG1 = 'normale';
+      if (tipo !== 'normale') bG1 = tipo;
+      else if (isFestivo(dObj)) bG1 = 'festivo';
+      else if (dObj.getDay() === 0) bG1 = 'domenica';
 
       if (fMin > iMin) {
         calcolaF(dStr, iMin, fMin, p, bG1, iStr, fStr);
@@ -371,10 +453,15 @@
         calcolaF(dStr, iMin, 1440, p, bG1, iStr, "24:00"); 
         let dObj2 = new Date(dObj); dObj2.setDate(dObj2.getDate() + 1);
         let dStr2 = dObj2.toISOString().split('T')[0];
-        let bG2 = (tipo === 'riposo_mancato') ? 'riposo_mancato' : (isFestivo(dObj2) ? 'festivo' : 'normale');
+        
+        let bG2 = 'normale';
+        if (tipo === 'riposo_mancato') bG2 = 'riposo_mancato';
+        else if (isFestivo(dObj2)) bG2 = 'festivo';
+        else if (dObj2.getDay() === 0) bG2 = 'domenica';
+
         calcolaF(dStr2, 0, fMin, 0, bG2, "00:00", fStr);
       }
-      localStorage.setItem('mieiTurni_v6', JSON.stringify(turni));
+      localStorage.setItem('mieiTurni_v7', JSON.stringify(turni));
       aggiornaTutto();
       showToast("Turno registrato con successo!");
       document.getElementById('ora-inizio').value = ''; document.getElementById('ora-fine').value = ''; document.getElementById('pausa').value = '0';
@@ -396,7 +483,7 @@
     function richiediEliminazione(id) {
       showConfirm("Elimina Turno", "Vuoi cancellare questo inserimento?", () => {
         turni = turni.filter(t => t.id !== id);
-        localStorage.setItem('mieiTurni_v6', JSON.stringify(turni));
+        localStorage.setItem('mieiTurni_v7', JSON.stringify(turni));
         closeModals();
         showToast("Turno eliminato", "🗑️");
         aggiornaTutto();
@@ -438,6 +525,7 @@
         tG.forEach(t => {
           let bH = '';
           if(t.badge === 'festivo') bH = `<span class="badge badge-festivo">Festivo</span>`;
+          if(t.badge === 'domenica') bH = `<span class="badge badge-domenica">Domenica</span>`;
           if(t.badge === 'riposo_mancato') bH = `<span class="badge badge-riposo">Riposo</span>`;
           html += `
             <div class="turno-list-item">
@@ -445,7 +533,7 @@
                 <strong style="font-size:15px;">${t.strInizio} - ${t.strFine}</strong> ${bH}<br>
                 <span style="font-size:13px; color:var(--text-muted);">Tot: ${t.oreTotali.toFixed(2)}h (Notte: ${t.oreNotturne.toFixed(1)}h)</span>
               </div>
-              <button class="outline" style="width:auto; padding:8px 12px; font-size:12px;" onclick="richiediEliminazione(${t.id})">Elimina</button>
+              <button class="outline btn-sm" onclick="richiediEliminazione(${t.id})">Elimina</button>
             </div>`;
         });
       }
@@ -466,8 +554,16 @@
       document.getElementById('riepilogo-mese-label').innerText = `${mN[m]} ${y}`;
 
       const tM = turni.filter(t => new Date(t.data).getFullYear() === y && new Date(t.data).getMonth() === m);
-      let tO = 0, tD = 0, tN = 0, tF = 0, tR = 0;
-      tM.forEach(t => { tO+=t.oreTotali; tD+=t.oreDiurne; tN+=t.oreNotturne; if(t.badge==='festivo')tF+=t.oreTotali; if(t.badge==='riposo_mancato')tR+=t.oreTotali; });
+      let tO = 0, tD = 0, tN = 0, tF = 0, tDom = 0, tR = 0;
+      
+      let giorniFestiviUnici = new Set();
+
+      tM.forEach(t => { 
+        tO+=t.oreTotali; tD+=t.oreDiurne; tN+=t.oreNotturne; 
+        if(t.badge==='festivo') { tF+=t.oreTotali; giorniFestiviUnici.add(t.data); }
+        if(t.badge==='domenica') tDom+=t.oreTotali;
+        if(t.badge==='riposo_mancato') tR+=t.oreTotali; 
+      });
 
       let sett = tM.length > 0 ? 4.33 : 0;
       let sM = tO > (impostazioni.monteOre * sett) ? (tO - (impostazioni.monteOre * sett)) : 0;
@@ -478,64 +574,67 @@
         <tr><th>Tipologia</th><th>Ore</th></tr>
         <tr><td>Lavorate (Totali)</td><td>${tO.toFixed(2)}h</td></tr>
         <tr><td>Diurne Normali</td><td>${tD.toFixed(2)}h</td></tr>
-        <tr><td>Notturne</td><td>${tN.toFixed(2)}h</td></tr>
-        <tr><td>Straordinari (Stima)</td><td>${sM.toFixed(2)}h</td></tr>
+        <tr><td>Notturne (Fascia ${impostazioni.inizioNotte}-${impostazioni.fineNotte})</td><td>${tN.toFixed(2)}h</td></tr>
+        <tr><td>Domeniche</td><td>${tDom.toFixed(2)}h</td></tr>
+        <tr><td>Festivi Fissi</td><td>${tF.toFixed(2)}h</td></tr>
+        <tr><td>Straordinari Oltre Contratto</td><td>${sM.toFixed(2)}h</td></tr>
       `;
 
       let p = impostazioni.pagaBase;
-      let cB = oN * p, cS = sM * p * (impostazioni.percStraordinario/100), cN = tN * p * (impostazioni.percNotturno/100), cF = tF * p * (impostazioni.percFestivo/100), cR = tR * p * (impostazioni.percRiposo/100);
-      let tot = cB + cS + cN + cF + cR;
+      let cB = oN * p;
+      let cS = sM * p * (impostazioni.percStraordinario/100);
+      let cN = tN * p * (impostazioni.percNotturno/100);
+      let cDom = tDom * p * (impostazioni.percDomenica/100);
+      let cF = tF * p * (impostazioni.percFestivo/100);
+      let cFissoFestivo = giorniFestiviUnici.size * impostazioni.bonusFestivo;
+      let cR = tR * p * (impostazioni.percRiposo/100);
+
+      let tot = cB + cS + cN + cDom + cF + cFissoFestivo + cR;
 
       document.getElementById('tabella-soldi-mensili').innerHTML = `
         <tr><th>Voce</th><th>Importo</th></tr>
-        <tr><td>Base Standard</td><td>€ ${cB.toFixed(2)}</td></tr>
+        <tr><td>Paga Base Standard</td><td>€ ${cB.toFixed(2)}</td></tr>
         <tr><td>Maggiorazioni Notturne</td><td>€ ${cN.toFixed(2)}</td></tr>
-        <tr><td>Straordinari / Festivi</td><td>€ ${(cS+cF+cR).toFixed(2)}</td></tr>
+        <tr><td>Straordinari (Oltre ore)</td><td>€ ${cS.toFixed(2)}</td></tr>
+        <tr><td>Domeniche (+${impostazioni.percDomenica}%)</td><td>€ ${cDom.toFixed(2)}</td></tr>
+        <tr><td>Festivi (+${impostazioni.percFestivo}% e fisse)</td><td>€ ${(cF + cFissoFestivo).toFixed(2)}</td></tr>
         <tr style="border-top:2px solid var(--accent); color:var(--accent);"><td>NETTO STIMATO</td><td>€ ${tot.toFixed(2)}</td></tr>
       `;
 
-      // Aggiorna Grafico Chart.js
+      // Aggiorna Grafico
       const ctx = document.getElementById('myChart');
       if (myChart) myChart.destroy();
-      
       const textColor = getComputedStyle(document.documentElement).getPropertyValue('--text-main');
-      
       myChart = new Chart(ctx, {
         type: 'doughnut',
         data: {
-          labels: ['Ore Standard', 'Ore Notturne', 'Straordinari/Festivi'],
+          labels: ['Base', 'Notturne', 'Extra (Str/Fest/Dom)'],
           datasets: [{
-            data: [oN.toFixed(1), tN.toFixed(1), (sM+tF+tR).toFixed(1)],
+            data: [oN.toFixed(1), tN.toFixed(1), (sM+tF+tDom+tR).toFixed(1)],
             backgroundColor: ['#007aff', '#5856d6', '#ff9500'],
-            borderWidth: 0,
-            hoverOffset: 5
+            borderWidth: 0, hoverOffset: 5
           }]
         },
         options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { position: 'bottom', labels: { color: textColor, font: { family: '-apple-system', size: 12 } } }
-          },
-          cutout: '65%'
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { position: 'bottom', labels: { color: textColor, font: { family: '-apple-system', size: 12 } } } }, cutout: '65%'
         }
       });
     }
 
     function richiediCancellazione() {
       showConfirm("Inizializza App", "Sei sicuro di voler cancellare tutti i turni salvati? Non potrai recuperarli.", () => {
-        turni = []; localStorage.removeItem('mieiTurni_v6');
-        aggiornaTutto();
-        showToast("Dati cancellati", "🧹");
+        turni = []; localStorage.removeItem('mieiTurni_v7');
+        aggiornaTutto(); showToast("Dati cancellati", "🧹");
       });
     }
 
     function aggiornaTutto() {
+      renderModelli();
       renderCalendar();
       if(document.getElementById('view-riepilogo').classList.contains('active')) renderRiepilogoMensile();
     }
     
-    // Inizializza
     aggiornaTutto();
   </script>
 </body>
