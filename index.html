@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>I Miei Orari V7</title>
+  <title>I Miei Orari V8</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     /* VARIABILI TEMA */
@@ -97,13 +97,20 @@
     .nav-item.active { color: var(--accent); }
     .nav-item.active span { transform: scale(1.15); }
 
-    /* TOAST E MODAL */
-    .toast { position: fixed; top: -100px; left: 50%; transform: translateX(-50%); background: var(--card-bg); color: var(--text-main); padding: 14px 24px; border-radius: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); font-weight: 600; font-size: 14px; z-index: 2000; transition: top 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; align-items: center; gap: 10px; border: 1px solid var(--border);}
+    /* TOAST E MODALS */
+    .toast { position: fixed; top: -100px; left: 50%; transform: translateX(-50%); background: var(--card-bg); color: var(--text-main); padding: 14px 24px; border-radius: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); font-weight: 600; font-size: 14px; z-index: 3000; transition: top 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; align-items: center; gap: 10px; border: 1px solid var(--border);}
     .toast.show { top: 40px; }
     
+    /* OVERLAY 1: Sfondo per la tendina del calendario */
     .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--overlay); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); z-index: 1500; opacity: 0; pointer-events: none; transition: 0.3s; }
     .overlay.show { opacity: 1; pointer-events: auto; }
-    .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.9); background: var(--card-bg); padding: 25px; border-radius: 20px; width: 85%; max-width: 320px; z-index: 1600; opacity: 0; pointer-events: none; transition: 0.3s; box-shadow: 0 20px 40px rgba(0,0,0,0.2); text-align: center;}
+    
+    /* OVERLAY 2: Sfondo scuro separato per i popup di conferma (più in alto) */
+    .overlay-confirm { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--overlay); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); z-index: 1900; opacity: 0; pointer-events: none; transition: 0.3s; }
+    .overlay-confirm.show { opacity: 1; pointer-events: auto; }
+
+    /* MODAL CONFERMA */
+    .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.9); background: var(--card-bg); padding: 25px; border-radius: 20px; width: 85%; max-width: 320px; z-index: 2000; opacity: 0; pointer-events: none; transition: 0.3s; box-shadow: 0 20px 40px rgba(0,0,0,0.25); text-align: center;}
     .modal.show { opacity: 1; pointer-events: auto; transform: translate(-50%, -50%) scale(1); }
     .modal-actions { display: flex; gap: 10px; margin-top: 15px;}
     .modal-actions button { margin-top: 0; }
@@ -137,23 +144,26 @@
     <span id="toastMsg">Azione completata</span>
   </div>
 
-  <!-- OVERLAY E MODAL CONFERMA -->
-  <div class="overlay" id="mainOverlay" onclick="closeModals()"></div>
-  <div class="modal" id="confirmModal">
-    <h3 id="modalTitle">Attenzione</h3>
-    <p id="modalDesc" style="color: var(--text-muted); font-size: 14px; margin-bottom: 20px;">Sei sicuro di voler procedere?</p>
-    <div class="modal-actions">
-      <button class="outline" onclick="closeModals()">Annulla</button>
-      <button class="danger" id="modalConfirmBtn">Conferma</button>
-    </div>
-  </div>
+  <!-- OVERLAY TENDINA CALENDARIO -->
+  <div class="overlay" id="mainOverlay" onclick="closeSheet()"></div>
 
   <!-- BOTTOM SHEET DETTAGLI GIORNO -->
   <div class="bottom-sheet" id="daySheet">
     <div class="sheet-handle"></div>
     <h2 id="sheetDate" style="margin-top:0; font-size:20px;">Dettagli Turno</h2>
     <div id="sheetContent"></div>
-    <button class="outline" style="margin-top: 20px;" onclick="closeModals()">Chiudi</button>
+    <button class="outline" style="margin-top: 15px; border-color: var(--border); color: var(--text-muted);" onclick="closeSheet()">Chiudi</button>
+  </div>
+
+  <!-- OVERLAY E MODAL CONFERMA (In primissimo piano) -->
+  <div class="overlay-confirm" id="confirmOverlay" onclick="closeConfirmModal()"></div>
+  <div class="modal" id="confirmModal">
+    <h3 id="modalTitle">Attenzione</h3>
+    <p id="modalDesc" style="color: var(--text-muted); font-size: 14px; margin-bottom: 20px;">Sei sicuro di voler procedere?</p>
+    <div class="modal-actions">
+      <button class="outline" onclick="closeConfirmModal()">Annulla</button>
+      <button class="danger" id="modalConfirmBtn">Conferma</button>
+    </div>
   </div>
 
   <!-- HEADER APP -->
@@ -187,8 +197,8 @@
       <label>Data</label>
       <input type="date" id="data-turno">
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-        <div><label>Inizio</label><input type="time" id="ora-inizio" required></div>
-        <div><label>Fine</label><input type="time" id="ora-fine" required></div>
+        <div><label>Inizio</label><input type="time" id="ora-inizio" step="900" required></div>
+        <div><label>Fine</label><input type="time" id="ora-fine" step="900" required></div>
       </div>
       <label>Pausa (minuti non pagati)</label>
       <input type="number" id="pausa" value="0">
@@ -255,8 +265,8 @@
       
       <h3 style="font-size: 14px; margin-top: 20px; border-bottom: 1px solid var(--border); padding-bottom: 4px;">Fascia Notturna</h3>
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-        <div><label>Inizio</label><input type="time" id="inizio-notte" value="01:00" onchange="salvaImpostazioni()"></div>
-        <div><label>Fine</label><input type="time" id="fine-notte" value="07:00" onchange="salvaImpostazioni()"></div>
+        <div><label>Inizio</label><input type="time" id="inizio-notte" value="01:00" step="900" onchange="salvaImpostazioni()"></div>
+        <div><label>Fine</label><input type="time" id="fine-notte" value="07:00" step="900" onchange="salvaImpostazioni()"></div>
       </div>
 
       <h3 style="font-size: 14px; margin-top: 20px; border-bottom: 1px solid var(--border); padding-bottom: 4px;">Maggiorazioni (%)</h3>
@@ -292,10 +302,15 @@
       setTimeout(() => tb.classList.remove('show'), 3000);
     }
 
-    function closeModals() {
+    // Gestione indipendente chiusura tendina vs chiusura popup elimina
+    function closeSheet() {
       document.getElementById('mainOverlay').classList.remove('show');
-      document.getElementById('confirmModal').classList.remove('show');
       document.getElementById('daySheet').classList.remove('show');
+    }
+    
+    function closeConfirmModal() {
+      document.getElementById('confirmOverlay').classList.remove('show');
+      document.getElementById('confirmModal').classList.remove('show');
     }
 
     let confirmCallback = null;
@@ -303,18 +318,19 @@
       document.getElementById('modalTitle').innerText = title;
       document.getElementById('modalDesc').innerText = desc;
       confirmCallback = callback;
-      document.getElementById('mainOverlay').classList.add('show');
+      // Mostriamo solo l'overlay dedicato alla conferma, lasciando intatto lo sfondo della tendina
+      document.getElementById('confirmOverlay').classList.add('show');
       document.getElementById('confirmModal').classList.add('show');
     }
-    document.getElementById('modalConfirmBtn').onclick = () => { if(confirmCallback) confirmCallback(); closeModals(); };
+    document.getElementById('modalConfirmBtn').onclick = () => { if(confirmCallback) confirmCallback(); closeConfirmModal(); };
 
-    let isDark = localStorage.getItem('theme_v7') === 'dark';
+    let isDark = localStorage.getItem('theme_v8') === 'dark';
     function applyTheme() {
       if(isDark) document.documentElement.setAttribute('data-theme', 'dark');
       else document.documentElement.removeAttribute('data-theme');
     }
     function toggleTheme() {
-      isDark = !isDark; localStorage.setItem('theme_v7', isDark ? 'dark' : 'light');
+      isDark = !isDark; localStorage.setItem('theme_v8', isDark ? 'dark' : 'light');
       applyTheme();
       if(document.getElementById('view-riepilogo').classList.contains('active')) renderRiepilogoMensile(); 
     }
@@ -337,9 +353,9 @@
 
     // --- LOGICA DATI ---
     document.getElementById('data-turno').valueAsDate = new Date();
-    let turni = JSON.parse(localStorage.getItem('mieiTurni_v7')) || [];
-    let modelli = JSON.parse(localStorage.getItem('mieiModelli_v7')) || [];
-    let impostazioni = JSON.parse(localStorage.getItem('mieImpostazioni_v7')) || { 
+    let turni = JSON.parse(localStorage.getItem('mieiTurni_v8')) || [];
+    let modelli = JSON.parse(localStorage.getItem('mieiModelli_v8')) || [];
+    let impostazioni = JSON.parse(localStorage.getItem('mieImpostazioni_v8')) || { 
       pagaBase: 6.23, monteOre: 40, inizioNotte: '01:00', fineNotte: '07:00',
       percStraordinario: 20, percNotturno: 20, percFestivo: 55, percRiposo: 75, percDomenica: 10, bonusFestivo: 25
     };
@@ -355,7 +371,7 @@
         let val = document.getElementById(id).value;
         impostazioni[key] = id.includes('notte') ? val : parseFloat(val) || 0;
       });
-      localStorage.setItem('mieImpostazioni_v7', JSON.stringify(impostazioni));
+      localStorage.setItem('mieImpostazioni_v8', JSON.stringify(impostazioni));
       showToast("Impostazioni salvate", "⚙️");
       aggiornaTutto();
     }
@@ -378,16 +394,16 @@
       if(!nome || !inizio || !fine) return showToast("Inserisci nome e orari", "⚠️");
 
       modelli.push({ id: Date.now(), nome, inizio, fine, pausa, tipo });
-      localStorage.setItem('mieiModelli_v7', JSON.stringify(modelli));
+      localStorage.setItem('mieiModelli_v8', JSON.stringify(modelli));
       document.getElementById('nome-modello').value = '';
       showToast("Modello salvato", "💾");
       renderModelli();
     }
 
     function eliminaModello(id, event) {
-      event.stopPropagation(); // Evita di "incollare" il modello quando lo si elimina
+      event.stopPropagation();
       modelli = modelli.filter(m => m.id !== id);
-      localStorage.setItem('mieiModelli_v7', JSON.stringify(modelli));
+      localStorage.setItem('mieiModelli_v8', JSON.stringify(modelli));
       renderModelli();
       showToast("Modello eliminato", "🗑️");
     }
@@ -402,7 +418,6 @@
     }
 
     function renderModelli() {
-      // Ordinamento: Prima per orario inizio, poi per durata minore
       modelli.sort((a,b) => {
         let sA = timeToMinutes(a.inizio), sB = timeToMinutes(b.inizio);
         if(sA !== sB) return sA - sB;
@@ -441,7 +456,6 @@
 
       let iMin = timeToMinutes(iStr), fMin = timeToMinutes(fStr), dObj = new Date(dStr);
       
-      // Assegnazione Automatica del Badge Giorno 1 (Festivo > Domenica > Normale)
       let bG1 = 'normale';
       if (tipo !== 'normale') bG1 = tipo;
       else if (isFestivo(dObj)) bG1 = 'festivo';
@@ -461,7 +475,7 @@
 
         calcolaF(dStr2, 0, fMin, 0, bG2, "00:00", fStr);
       }
-      localStorage.setItem('mieiTurni_v7', JSON.stringify(turni));
+      localStorage.setItem('mieiTurni_v8', JSON.stringify(turni));
       aggiornaTutto();
       showToast("Turno registrato con successo!");
       document.getElementById('ora-inizio').value = ''; document.getElementById('ora-fine').value = ''; document.getElementById('pausa').value = '0';
@@ -483,14 +497,21 @@
     function richiediEliminazione(id) {
       showConfirm("Elimina Turno", "Vuoi cancellare questo inserimento?", () => {
         turni = turni.filter(t => t.id !== id);
-        localStorage.setItem('mieiTurni_v7', JSON.stringify(turni));
-        closeModals();
+        localStorage.setItem('mieiTurni_v8', JSON.stringify(turni));
+        // chiudiamo il confirm, la tendina rimane aperta e si aggiorna
+        closeConfirmModal();
         showToast("Turno eliminato", "🗑️");
         aggiornaTutto();
+        // Aggiorniamo la tendina se è ancora aperta su una data specifica (leggiamo la data dal titolo)
+        let testoData = document.getElementById('sheetDate').innerText.replace("Turni del ", "");
+        if(testoData && testoData.includes("/")) {
+          let [g, m, y] = testoData.split("/");
+          apriSheet(`${y}-${m}-${g}`);
+        }
       });
     }
 
-    // --- CALENDARIO E BOTTOM SHEET ---
+    // --- CALENDARIO E INSERIMENTO RAPIDO ---
     let cDate = new Date();
     function cambiaMese(step) { cDate.setMonth(cDate.getMonth() + step); renderCalendar(); }
 
@@ -520,8 +541,9 @@
       const dIta = dStr.split('-').reverse().join('/');
       document.getElementById('sheetDate').innerText = `Turni del ${dIta}`;
       let html = '';
-      if(tG.length === 0) html = `<p style="color:var(--text-muted); font-size:14px;">Nessun turno registrato in questa data.</p>`;
-      else {
+      if(tG.length === 0) {
+          html = `<p style="color:var(--text-muted); font-size:14px; text-align:center;">Nessun turno in questa data.</p>`;
+      } else {
         tG.forEach(t => {
           let bH = '';
           if(t.badge === 'festivo') bH = `<span class="badge badge-festivo">Festivo</span>`;
@@ -537,9 +559,27 @@
             </div>`;
         });
       }
+      
+      // Bottone scorciatoia inserimento
+      html += `
+        <button onclick="vaiAInserimento('${dStr}')" style="margin-top: 15px; background: transparent; color: var(--accent); border: 2px dashed var(--accent); box-shadow: none;">
+          ➕ Inserisci Turno Qui
+        </button>
+      `;
+
       document.getElementById('sheetContent').innerHTML = html;
       document.getElementById('mainOverlay').classList.add('show');
       document.getElementById('daySheet').classList.add('show');
+    }
+
+    function vaiAInserimento(dStr) {
+      // Imposta la data nel campo del form
+      document.getElementById('data-turno').value = dStr;
+      // Chiude la tendina
+      closeSheet();
+      // Trova il bottone della navbar "Inserisci" (il secondo) e attiva lo switch
+      const btnInserisci = document.querySelectorAll('.nav-item')[1];
+      switchTab('inserisci', btnInserisci);
     }
 
     // --- RIEPILOGO, GRAFICO E SOLDI ---
@@ -624,7 +664,7 @@
 
     function richiediCancellazione() {
       showConfirm("Inizializza App", "Sei sicuro di voler cancellare tutti i turni salvati? Non potrai recuperarli.", () => {
-        turni = []; localStorage.removeItem('mieiTurni_v7');
+        turni = []; localStorage.removeItem('mieiTurni_v8');
         aggiornaTutto(); showToast("Dati cancellati", "🧹");
       });
     }
