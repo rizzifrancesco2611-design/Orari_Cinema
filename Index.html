@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Il Mio Orario</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 15px; background: #f2f2f7; color: #1c1c1e; margin: 0; }
+    h2 { font-size: 20px; margin-bottom: 15px; }
+    .card { background: white; padding: 20px; border-radius: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
+    label { display: block; font-size: 14px; font-weight: 600; margin-top: 10px; margin-bottom: 5px; color: #8e8e93; }
+    input, select { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #d1d1d6; border-radius: 10px; box-sizing: border-box; font-size: 16px; }
+    button { width: 100%; padding: 14px; background: #007aff; color: white; border: none; border-radius: 12px; font-weight: 600; font-size: 16px; cursor: pointer; margin-top: 10px; }
+    button:active { background: #005bb5; }
+    .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+    .stat-box { background: #f2f2f7; padding: 15px; border-radius: 10px; text-align: center; }
+    .stat-box strong { display: block; font-size: 24px; color: #007aff; }
+  </style>
+</head>
+<body>
+
+  <!-- DASHBOARD RIASSUNTIVA -->
+  <div class="card">
+    <h2>Riepilogo Mese Corrente</h2>
+    <div class="dashboard">
+      <div class="stat-box">Totale Ore<br><strong id="tot-ore">0.0</strong></div>
+      <div class="stat-box">Ore Diurne<br><strong id="tot-diurne">0.0</strong></div>
+      <div class="stat-box">Ore Notturne<br><strong id="tot-notturne">0.0</strong></div>
+      <div class="stat-box">Straordinari<br><strong id="tot-extra">0.0</strong></div>
+    </div>
+  </div>
+
+  <!-- IMPOSTAZIONI CONTRATTO -->
+  <div class="card">
+    <h2>Impostazioni Base</h2>
+    <label>Paga oraria standard (€)</label>
+    <input type="number" id="paga-base" step="0.5" value="10.00">
+    <label>Monte ore settimanale (Contratto)</label>
+    <select id="monte-ore">
+      <option value="8">8 ore</option>
+      <option value="12">12 ore</option>
+      <option value="18">18 ore</option>
+      <option value="20">20 ore</option>
+      <option value="24">24 ore</option>
+      <option value="40" selected>40 ore</option>
+    </select>
+  </div>
+
+  <!-- INSERIMENTO TURNO -->
+  <div class="card">
+    <h2>Registra Turno</h2>
+    <label>Data</label>
+    <input type="date" id="data-turno">
+    
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+      <div>
+        <label>Inizio</label>
+        <input type="time" id="ora-inizio">
+      </div>
+      <div>
+        <label>Fine</label>
+        <input type="time" id="ora-fine">
+      </div>
+    </div>
+
+    <label>Pausa (minuti non retribuiti)</label>
+    <input type="number" id="pausa" value="30">
+
+    <label>Sovrascrittura Maggiorazione (Manuale)</label>
+    <select id="maggiorazione-manuale">
+      <option value="auto">Automatico (Calcola da solo)</option>
+      <option value="festivo_euro">Festivo (+ Euro fissi)</option>
+      <option value="festivo_perc">Festivo (+ Percentuale)</option>
+      <option value="notturno">Solo Notturno</option>
+      <option value="straordinario">Solo Straordinario</option>
+    </select>
+
+    <button onclick="salvaTurno()">Salva Turno</button>
+  </div>
+
+  <script>
+    // Imposta la data di oggi in automatico
+    document.getElementById('data-turno').valueAsDate = new Date();
+
+    // Database locale del browser (LocalStorage)
+    let turni = JSON.parse(localStorage.getItem('mieiTurni')) || [];
+
+    function salvaTurno() {
+      const data = document.getElementById('data-turno').value;
+      const inizio = document.getElementById('ora-inizio').value;
+      const fine = document.getElementById('ora-fine').value;
+      const pausa = parseInt(document.getElementById('pausa').value) || 0;
+      const override = document.getElementById('maggiorazione-manuale').value;
+
+      if(!data || !inizio || !fine) {
+        alert("Inserisci data, ora di inizio e fine.");
+        return;
+      }
+
+      // Calcolo base delle ore (Versione Semplificata senza scavalco mezzanotte per ora)
+      const [hInizio, mInizio] = inizio.split(':').map(Number);
+      const [hFine, mFine] = fine.split(':').map(Number);
+      
+      let minutiTotali = ((hFine * 60) + mFine) - ((hInizio * 60) + mInizio) - pausa;
+      let oreLavorate = (minutiTotali / 60).toFixed(2);
+
+      const turno = {
+        id: Date.now(),
+        data,
+        inizio,
+        fine,
+        pausa,
+        ore: parseFloat(oreLavorate),
+        override
+      };
+
+      turni.push(turno);
+      localStorage.setItem('mieiTurni', JSON.stringify(turni));
+      alert(`Turno salvato! Ore nette: ${oreLavorate}`);
+      aggiornaDashboard();
+    }
+
+    function aggiornaDashboard() {
+      let totOre = 0;
+      turni.forEach(t => { totOre += t.ore; });
+      document.getElementById('tot-ore').innerText = totOre.toFixed(2);
+      // Le logiche di divisione notturne/diurne/straordinari verranno inserite qui
+    }
+
+    // Inizializza la dashboard all'apertura
+    aggiornaDashboard();
+  </script>
+</body>
+</html>
