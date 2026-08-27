@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>I Miei Orari V11</title>
+  <title>I Miei Orari V12</title>
   
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" crossorigin="anonymous"></script>
   
@@ -322,13 +322,13 @@
       }
     }
 
-    let isDark = localStorage.getItem('theme_v11') === 'dark';
+    let isDark = localStorage.getItem('theme_v12') === 'dark';
     function applyTheme() {
       if(isDark) document.documentElement.setAttribute('data-theme', 'dark');
       else document.documentElement.removeAttribute('data-theme');
     }
     function toggleTheme() {
-      isDark = !isDark; localStorage.setItem('theme_v11', isDark ? 'dark' : 'light');
+      isDark = !isDark; localStorage.setItem('theme_v12', isDark ? 'dark' : 'light');
       applyTheme();
       if(document.getElementById('view-riepilogo').classList.contains('active')) renderRiepilogoMensile(); 
     }
@@ -351,11 +351,9 @@
 
     document.getElementById('data-turno').valueAsDate = new Date();
     
-    let turni = safeLoadJSON('mieiTurni_v11', safeLoadJSON('mieiTurni_v10', safeLoadJSON('mieiTurni_v9', [])));
-    let modelli = safeLoadJSON('mieiModelli_v11', safeLoadJSON('mieiModelli_v10', safeLoadJSON('mieiModelli_v9', [])));
-    
-    // Default impostazioni con monteOre impostato a 20 di base
-    let impostazioni = safeLoadJSON('mieImpostazioni_v11', safeLoadJSON('mieImpostazioni_v10', safeLoadJSON('mieImpostazioni_v9', { 
+    let turni = safeLoadJSON('mieiTurni_v12', safeLoadJSON('mieiTurni_v11', safeLoadJSON('mieiTurni_v10', [])));
+    let modelli = safeLoadJSON('mieiModelli_v12', safeLoadJSON('mieiModelli_v11', safeLoadJSON('mieiModelli_v10', [])));
+    let impostazioni = safeLoadJSON('mieImpostazioni_v12', safeLoadJSON('mieImpostazioni_v11', safeLoadJSON('mieImpostazioni_v10', { 
       pagaBase: 6.23, monteOre: 20, inizioNotte: '01:00', fineNotte: '07:00',
       percStraordinario: 20, percNotturno: 20, percFestivo: 55, percRiposo: 75, percDomenica: 10, bonusFestivo: 25
     })));
@@ -373,10 +371,15 @@
     function salvaImpostazioni() {
       Object.keys(configMap).forEach(id => {
         let val = document.getElementById(id).value;
-        impostazioni[configMap[id]] = (id.includes('notte') || id === 'monte-ore') && id !== 'paga-base' && !id.includes('perc') && id !== 'bonus-festivo' ? val : (id === 'monte-ore' ? parseInt(val) || 20 : parseFloat(val) || 0);
-        if(id === 'monte-ore') impostazioni[configMap[id]] = parseInt(val) || 20;
+        if(id.includes('notte')) {
+          impostazioni[configMap[id]] = val;
+        } else if(id === 'monte-ore') {
+          impostazioni[configMap[id]] = parseInt(val) || 20;
+        } else {
+          impostazioni[configMap[id]] = parseFloat(val) || 0;
+        }
       });
-      localStorage.setItem('mieImpostazioni_v11', JSON.stringify(impostazioni));
+      localStorage.setItem('mieImpostazioni_v12', JSON.stringify(impostazioni));
       showToast("Impostazioni salvate", "⚙️");
       aggiornaTutto();
     }
@@ -427,7 +430,7 @@
         showToast("Modello salvato", "💾");
       }
       
-      localStorage.setItem('mieiModelli_v11', JSON.stringify(modelli));
+      localStorage.setItem('mieiModelli_v12', JSON.stringify(modelli));
       document.getElementById('nome-modello').value = '';
       renderModelli();
     }
@@ -435,7 +438,7 @@
     function eliminaModello(id, event) {
       event.stopPropagation();
       modelli = modelli.filter(m => m.id !== id);
-      localStorage.setItem('mieiModelli_v11', JSON.stringify(modelli));
+      localStorage.setItem('mieiModelli_v12', JSON.stringify(modelli));
       renderModelli();
       showToast("Modello eliminato", "🗑️");
     }
@@ -454,7 +457,7 @@
         let sA = timeToMinutes(a.inizio), sB = timeToMinutes(b.inizio);
         if(sA !== sB) return sA - sB;
         let dA = timeToMinutes(a.fine) - sA; if(dA<0) dA+=1440;
-        let dB = timeToMinutes(b.fine) - sB; if(dB<0) dB+=1440;
+        let dB = timeToMinutes(a.fine) - sB; if(dB<0) dB+=1440;
         return dA - dB;
       });
 
@@ -516,7 +519,7 @@
         calcolaFrammento(dataStr2, 0, fineMinuti, 0, badgeGiorno2, "00:00", fineStr);
       }
       
-      localStorage.setItem('mieiTurni_v11', JSON.stringify(turni));
+      localStorage.setItem('mieiTurni_v12', JSON.stringify(turni));
       aggiornaTutto();
       showToast("Turno registrato con successo!");
       document.getElementById('ora-inizio').value = ''; 
@@ -548,7 +551,7 @@
     function richiediEliminazione(id) {
       showConfirm("Elimina Turno", "Vuoi cancellare questo inserimento?", () => {
         turni = turni.filter(t => t.id !== id);
-        localStorage.setItem('mieiTurni_v11', JSON.stringify(turni));
+        localStorage.setItem('mieiTurni_v12', JSON.stringify(turni));
         closeConfirmModal();
         showToast("Turno eliminato", "🗑️");
         aggiornaTutto();
@@ -583,9 +586,9 @@
           if (imported.modelli) modelli = imported.modelli;
           if (imported.impostazioni) impostazioni = imported.impostazioni;
           
-          localStorage.setItem('mieiTurni_v11', JSON.stringify(turni));
-          localStorage.setItem('mieiModelli_v11', JSON.stringify(modelli));
-          localStorage.setItem('mieImpostazioni_v11', JSON.stringify(impostazioni));
+          localStorage.setItem('mieiTurni_v12', JSON.stringify(turni));
+          localStorage.setItem('mieiModelli_v12', JSON.stringify(modelli));
+          localStorage.setItem('mieImpostazioni_v12', JSON.stringify(impostazioni));
           
           Object.keys(configMap).forEach(id => {
             if(document.getElementById(id)) document.getElementById(id).value = impostazioni[configMap[id]];
@@ -745,23 +748,24 @@
       `;
 
       let p = impostazioni.pagaBase;
+      // FIX CORRETTO: Le maggiorazioni ora si applicano sommandole alla tariffa base intera (es. 10% -> 1.10)
       let cB = oN * p;
-      let cS = sM * p * (impostazioni.percStraordinario/100);
-      let cN = tN * p * (impostazioni.percNotturno/100);
-      let cDom = tDom * p * (impostazioni.percDomenica/100);
-      let cF = tF * p * (impostazioni.percFestivo/100);
+      let cS = sM * p * (1 + impostazioni.percStraordinario / 100);
+      let cN = tN * p * (1 + impostazioni.percNotturno / 100);
+      let cDom = tDom * p * (1 + impostazioni.percDomenica / 100);
+      let cF = tF * p * (1 + impostazioni.percFestivo / 100);
       let cFissoFestivo = giorniFestiviUnici.size * impostazioni.bonusFestivo;
-      let cR = tR * p * (impostazioni.percRiposo/100);
+      let cR = tR * p * (1 + impostazioni.percRiposo / 100);
 
-      let tot = cB + cS + cN + cDom + cF + cFissoFestivo + cR;
+      let tot = cB + (cS - (sM*p)) + (cN - (tN*p)) + (cDom - (tDom*p)) + (cF - (tF*p)) + cFissoFestivo + (cR - (tR*p));
 
       document.getElementById('tabella-soldi-mensili').innerHTML = `
         <tr><th>Voce</th><th>Importo</th></tr>
         <tr><td>Paga Base Standard</td><td>€ ${cB.toFixed(2)}</td></tr>
-        <tr><td>Maggiorazioni Notturne</td><td>€ ${cN.toFixed(2)}</td></tr>
-        <tr><td>Straordinari (Oltre ore)</td><td>€ ${cS.toFixed(2)}</td></tr>
-        <tr><td>Domeniche (+${impostazioni.percDomenica}%)</td><td>€ ${cDom.toFixed(2)}</td></tr>
-        <tr><td>Festivi (+${impostazioni.percFestivo}% e fisse)</td><td>€ ${(cF + cFissoFestivo).toFixed(2)}</td></tr>
+        <tr><td>Maggiorazioni Notturne (extra)</td><td>€ ${(cN - (tN*p)).toFixed(2)}</td></tr>
+        <tr><td>Straordinari (extra)</td><td>€ ${(cS - (sM*p)).toFixed(2)}</td></tr>
+        <tr><td>Domeniche (+${impostazioni.percDomenica}%)</td><td>€ ${(cDom - (tDom*p)).toFixed(2)}</td></tr>
+        <tr><td>Festivi (+${impostazioni.percFestivo}% e fisse)</td><td>€ ${((cF - (tF*p)) + cFissoFestivo).toFixed(2)}</td></tr>
         <tr style="border-top:2px solid var(--accent); color:var(--accent);"><td>NETTO STIMATO</td><td>€ ${tot.toFixed(2)}</td></tr>
       `;
 
@@ -794,7 +798,7 @@
 
     function richiediCancellazione() {
       showConfirm("Inizializza App", "Sei sicuro di voler cancellare tutti i turni salvati? Non potrai recuperarli senza un backup.", () => {
-        turni = []; localStorage.removeItem('mieiTurni_v11');
+        turni = []; localStorage.removeItem('mieiTurni_v12');
         aggiornaTutto(); showToast("Dati cancellati", "🧹");
       });
     }
