@@ -3,40 +3,74 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Il Mio Orario</title>
+  <title>Il Mio Orario V2</title>
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 15px; background: #f2f2f7; color: #1c1c1e; margin: 0; }
-    h2 { font-size: 20px; margin-bottom: 15px; }
+    h2 { font-size: 20px; margin-bottom: 15px; border-bottom: 2px solid #e5e5ea; padding-bottom: 5px;}
     .card { background: white; padding: 20px; border-radius: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
     label { display: block; font-size: 14px; font-weight: 600; margin-top: 10px; margin-bottom: 5px; color: #8e8e93; }
-    input, select { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #d1d1d6; border-radius: 10px; box-sizing: border-box; font-size: 16px; }
+    input, select { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #d1d1d6; border-radius: 10px; box-sizing: border-box; font-size: 16px; background: #fafafa;}
     button { width: 100%; padding: 14px; background: #007aff; color: white; border: none; border-radius: 12px; font-weight: 600; font-size: 16px; cursor: pointer; margin-top: 10px; }
     button:active { background: #005bb5; }
+    button.danger { background: #ff3b30; margin-top:5px; }
+    button.danger:active { background: #d70015; }
     .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-    .stat-box { background: #f2f2f7; padding: 15px; border-radius: 10px; text-align: center; }
-    .stat-box strong { display: block; font-size: 24px; color: #007aff; }
+    .stat-box { background: #f2f2f7; padding: 10px; border-radius: 10px; text-align: center; font-size: 12px;}
+    .stat-box strong { display: block; font-size: 20px; color: #007aff; margin-top: 5px;}
+    .turno-item { background: #f9f9f9; padding: 10px; border-radius: 8px; margin-bottom: 10px; font-size: 14px; border-left: 4px solid #007aff; }
+    .turno-header { display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 5px;}
+    .turno-details { color: #666; font-size: 13px;}
+    .festivo-badge { background: #ff9500; color: white; padding: 2px 6px; border-radius: 4px; font-size: 11px; margin-left: 5px;}
   </style>
 </head>
 <body>
 
-  <!-- DASHBOARD RIASSUNTIVA -->
+  <!-- DASHBOARD SETTIMANALE -->
   <div class="card">
-    <h2>Riepilogo Mese Corrente</h2>
+    <h2>Riepilogo Settimana (Lun-Dom)</h2>
     <div class="dashboard">
-      <div class="stat-box">Totale Ore<br><strong id="tot-ore">0.0</strong></div>
-      <div class="stat-box">Ore Diurne<br><strong id="tot-diurne">0.0</strong></div>
-      <div class="stat-box">Ore Notturne<br><strong id="tot-notturne">0.0</strong></div>
-      <div class="stat-box">Straordinari<br><strong id="tot-extra">0.0</strong></div>
+      <div class="stat-box">Tot. Ore Settimana<br><strong id="tot-settimana">0.00</strong></div>
+      <div class="stat-box">Straordinari<br><strong id="tot-straordinari">0.00</strong></div>
+      <div class="stat-box">Ore Diurne<br><strong id="tot-diurne">0.00</strong></div>
+      <div class="stat-box">Ore Notturne<br><strong id="tot-notturne">0.00</strong></div>
     </div>
+  </div>
+
+  <!-- INSERIMENTO TURNO -->
+  <div class="card">
+    <h2>Registra Turno</h2>
+    <label>Data di Inizio Turno</label>
+    <input type="date" id="data-turno">
+    
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+      <div>
+        <label>Ora Inizio</label>
+        <input type="time" id="ora-inizio" required>
+      </div>
+      <div>
+        <label>Ora Fine</label>
+        <input type="time" id="ora-fine" required>
+      </div>
+    </div>
+
+    <label>Pausa (minuti non retribuiti)</label>
+    <input type="number" id="pausa" value="0">
+
+    <label>Contesto (Opzionale)</label>
+    <select id="tipo-giornata">
+      <option value="normale">Giorno Lavorativo Normale</option>
+      <option value="festivo">Giorno Festivo / Domenica</option>
+      <option value="riposo_mancato">Mancato Riposo</option>
+    </select>
+
+    <button onclick="salvaTurno()">Salva Turno</button>
   </div>
 
   <!-- IMPOSTAZIONI CONTRATTO -->
   <div class="card">
-    <h2>Impostazioni Base</h2>
-    <label>Paga oraria standard (€)</label>
-    <input type="number" id="paga-base" step="0.5" value="10.00">
-    <label>Monte ore settimanale (Contratto)</label>
-    <select id="monte-ore">
+    <h2>Impostazioni CCNL</h2>
+    <label>Monte ore settimanale</label>
+    <select id="monte-ore" onchange="salvaImpostazioni()">
       <option value="8">8 ore</option>
       <option value="12">12 ore</option>
       <option value="18">18 ore</option>
@@ -44,90 +78,251 @@
       <option value="24">24 ore</option>
       <option value="40" selected>40 ore</option>
     </select>
+    <label>Inizio Fascia Notturna</label>
+    <input type="time" id="inizio-notte" value="22:00" onchange="salvaImpostazioni()">
+    <label>Fine Fascia Notturna</label>
+    <input type="time" id="fine-notte" value="06:00" onchange="salvaImpostazioni()">
   </div>
 
-  <!-- INSERIMENTO TURNO -->
+  <!-- LISTA TURNI RECENTI -->
   <div class="card">
-    <h2>Registra Turno</h2>
-    <label>Data</label>
-    <input type="date" id="data-turno">
-    
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-      <div>
-        <label>Inizio</label>
-        <input type="time" id="ora-inizio">
-      </div>
-      <div>
-        <label>Fine</label>
-        <input type="time" id="ora-fine">
-      </div>
-    </div>
-
-    <label>Pausa (minuti non retribuiti)</label>
-    <input type="number" id="pausa" value="30">
-
-    <label>Sovrascrittura Maggiorazione (Manuale)</label>
-    <select id="maggiorazione-manuale">
-      <option value="auto">Automatico (Calcola da solo)</option>
-      <option value="festivo_euro">Festivo (+ Euro fissi)</option>
-      <option value="festivo_perc">Festivo (+ Percentuale)</option>
-      <option value="notturno">Solo Notturno</option>
-      <option value="straordinario">Solo Straordinario</option>
-    </select>
-
-    <button onclick="salvaTurno()">Salva Turno</button>
+    <h2>Turni Registrati (Ultima settimana)</h2>
+    <div id="lista-turni"></div>
+    <button class="danger" onclick="cancellaDati()">Cancella Tutti i Dati</button>
   </div>
 
   <script>
-    // Imposta la data di oggi in automatico
+    // --- INIZIALIZZAZIONE ---
     document.getElementById('data-turno').valueAsDate = new Date();
+    let turni = JSON.parse(localStorage.getItem('mieiTurni_v2')) || [];
+    let impostazioni = JSON.parse(localStorage.getItem('mieImpostazioni_v2')) || {
+      monteOre: 40,
+      inizioNotte: '22:00',
+      fineNotte: '06:00'
+    };
 
-    // Database locale del browser (LocalStorage)
-    let turni = JSON.parse(localStorage.getItem('mieiTurni')) || [];
+    // Carica impostazioni nella UI
+    document.getElementById('monte-ore').value = impostazioni.monteOre;
+    document.getElementById('inizio-notte').value = impostazioni.inizioNotte;
+    document.getElementById('fine-notte').value = impostazioni.fineNotte;
 
+    function salvaImpostazioni() {
+      impostazioni.monteOre = parseFloat(document.getElementById('monte-ore').value);
+      impostazioni.inizioNotte = document.getElementById('inizio-notte').value;
+      impostazioni.fineNotte = document.getElementById('fine-notte').value;
+      localStorage.setItem('mieImpostazioni_v2', JSON.stringify(impostazioni));
+      aggiornaDashboard(); // Ricalcola se cambia il monte ore
+    }
+
+    // --- LOGICA DI CALCOLO DATE E ORE ---
+
+    // Funzione per capire se un giorno è festivo (in Italia)
+    function isFestivo(dateObj) {
+      const d = dateObj.getDate();
+      const m = dateObj.getMonth() + 1; // 1-12
+      // Domenica
+      if (dateObj.getDay() === 0) return true;
+      
+      const festiviFissi = [
+        "1-1", "6-1", "25-4", "1-5", "2-6", "15-8", "1-11", "8-12", "25-12", "26-12"
+      ];
+      return festiviFissi.includes(`${d}-${m}`);
+    }
+
+    // Trova il lunedì della settimana di una data
+    function getInizioSettimana(dateObj) {
+      const d = new Date(dateObj);
+      const day = d.getDay();
+      const diff = d.getDate() - day + (day == 0 ? -6 : 1); // Aggiusta per Domenica (0)
+      d.setDate(diff);
+      d.setHours(0,0,0,0);
+      return d;
+    }
+
+    // Converte HH:MM in minuti totali dal midnight
+    function timeToMinutes(timeStr) {
+      const [h, m] = timeStr.split(':').map(Number);
+      return h * 60 + m;
+    }
+
+    // --- FUNZIONE PRINCIPALE SALVATAGGIO E SPEZZAMENTO ---
     function salvaTurno() {
-      const data = document.getElementById('data-turno').value;
-      const inizio = document.getElementById('ora-inizio').value;
-      const fine = document.getElementById('ora-fine').value;
+      const dataStr = document.getElementById('data-turno').value;
+      const inizioStr = document.getElementById('ora-inizio').value;
+      const fineStr = document.getElementById('ora-fine').value;
       const pausa = parseInt(document.getElementById('pausa').value) || 0;
-      const override = document.getElementById('maggiorazione-manuale').value;
+      const tipoGiornata = document.getElementById('tipo-giornata').value; // Forzatura manuale festivo
 
-      if(!data || !inizio || !fine) {
+      if(!dataStr || !inizioStr || !fineStr) {
         alert("Inserisci data, ora di inizio e fine.");
         return;
       }
 
-      // Calcolo base delle ore (Versione Semplificata senza scavalco mezzanotte per ora)
-      const [hInizio, mInizio] = inizio.split(':').map(Number);
-      const [hFine, mFine] = fine.split(':').map(Number);
+      let inizioMin = timeToMinutes(inizioStr);
+      let fineMin = timeToMinutes(fineStr);
       
-      let minutiTotali = ((hFine * 60) + mFine) - ((hInizio * 60) + mInizio) - pausa;
-      let oreLavorate = (minutiTotali / 60).toFixed(2);
+      let dataInizioObj = new Date(dataStr);
+      
+      // Controllo festività automatica, se non forzata
+      let festivoG1 = (tipoGiornata === 'festivo') || isFestivo(dataInizioObj);
 
-      const turno = {
-        id: Date.now(),
-        data,
-        inizio,
-        fine,
-        pausa,
-        ore: parseFloat(oreLavorate),
-        override
-      };
+      // CASO 1: Turno nello stesso giorno (es. 08:00 - 18:00)
+      if (fineMin > inizioMin) {
+        calcolaESalvaFrammento(dataStr, inizioMin, fineMin, pausa, festivoG1, tipoGiornata);
+      } 
+      // CASO 2: Scavalco della mezzanotte (es. 20:00 - 04:00)
+      else {
+        // Frammento Giorno 1 (fino a 23:59)
+        calcolaESalvaFrammento(dataStr, inizioMin, 1440, pausa, festivoG1, tipoGiornata); // 1440 = 24:00
+        
+        // Frammento Giorno 2 (da 00:00 in poi)
+        let dataFineObj = new Date(dataInizioObj);
+        dataFineObj.setDate(dataFineObj.getDate() + 1);
+        let dataFineStr = dataFineObj.toISOString().split('T')[0];
+        
+        // Il giorno 2 potrebbe essere festivo (es. si sfocia in domenica o nel 1 maggio)
+        let festivoG2 = (tipoGiornata === 'festivo') || isFestivo(dataFineObj);
+        
+        // Non raddoppiamo la pausa, l'abbiamo messa nel giorno 1.
+        calcolaESalvaFrammento(dataFineStr, 0, fineMin, 0, festivoG2, tipoGiornata);
+      }
 
-      turni.push(turno);
-      localStorage.setItem('mieiTurni', JSON.stringify(turni));
-      alert(`Turno salvato! Ore nette: ${oreLavorate}`);
+      localStorage.setItem('mieiTurni_v2', JSON.stringify(turni));
+      alert("Turno salvato con successo!");
       aggiornaDashboard();
     }
 
-    function aggiornaDashboard() {
-      let totOre = 0;
-      turni.forEach(t => { totOre += t.ore; });
-      document.getElementById('tot-ore').innerText = totOre.toFixed(2);
-      // Le logiche di divisione notturne/diurne/straordinari verranno inserite qui
+    // Calcola diurne/notturne di un singolo giorno e lo salva
+    function calcolaESalvaFrammento(data, startMin, endMin, pausa, isFestivoFlag, tipoGiornata) {
+      if (startMin >= endMin) return; // Sicurezza
+
+      const notteInizio = timeToMinutes(impostazioni.inizioNotte); // es. 1320 (22:00)
+      const notteFine = timeToMinutes(impostazioni.fineNotte);     // es. 360  (06:00)
+
+      let diurne = 0;
+      let notturne = 0;
+
+      // Iteriamo minuto per minuto per capire in che fascia siamo
+      // È meno efficiente della matematica pura ma infallibile per coprire tutti gli accavallamenti
+      for (let m = startMin; m < endMin; m++) {
+        // Se il minuto attuale è tra le 00:00 e le 06:00 OPPURE tra le 22:00 e le 23:59
+        let isMinNotturno = false;
+        
+        // Gestione fasce notturne "standard" (es 22-06, quindi notteInizio > notteFine)
+        if (notteInizio > notteFine) {
+             if (m >= notteInizio || m < notteFine) isMinNotturno = true;
+        } else {
+             // Caso strano ma supportato (es 02:00 - 05:00)
+             if (m >= notteInizio && m < notteFine) isMinNotturno = true;
+        }
+
+        if (isMinNotturno) notturne++;
+        else diurne++;
+      }
+
+      // Sottrai la pausa (la tolgo dalle diurne per comodità, se ci sono. Altrimenti dalle notturne)
+      let p = pausa;
+      if (diurne >= p) { diurne -= p; } 
+      else { p -= diurne; diurne = 0; notturne -= p; }
+      
+      // Se dopo la pausa i minuti sono negativi (errore utente), azzera
+      if(notturne < 0) notturne = 0;
+
+      let oreDiurne = +(diurne / 60).toFixed(2);
+      let oreNotturne = +(notturne / 60).toFixed(2);
+      let oreTotali = +(oreDiurne + oreNotturne).toFixed(2);
+
+      turni.push({
+        id: Date.now() + Math.random(), // ID univoco per frammento
+        data: data,
+        startMin: startMin,
+        endMin: endMin,
+        oreTotali: oreTotali,
+        oreDiurne: oreDiurne,
+        oreNotturne: oreNotturne,
+        isFestivo: isFestivoFlag,
+        tipoGiornata: tipoGiornata // Per regole future
+      });
     }
 
-    // Inizializza la dashboard all'apertura
+    // --- DASHBOARD E RIEPILOGO SETTIMANALE ---
+    function aggiornaDashboard() {
+      // 1. Identifica la settimana corrente basandoti sull'ultimo turno inserito,
+      // oppure oggi se vuoto.
+      let dataRiferimento = new Date();
+      if(turni.length > 0) {
+          // Ordina per data per prendere la più recente
+          let turniOrdinati = [...turni].sort((a,b) => new Date(b.data) - new Date(a.data));
+          dataRiferimento = new Date(turniOrdinati[0].data);
+      }
+      
+      const inizioSettimana = getInizioSettimana(dataRiferimento);
+      let fineSettimana = new Date(inizioSettimana);
+      fineSettimana.setDate(fineSettimana.getDate() + 6);
+
+      let totOre = 0;
+      let totDiurne = 0;
+      let totNotturne = 0;
+
+      // Filtra i turni di questa specifica settimana e prepara la UI
+      let htmlLista = '';
+      let turniFiltrati = turni.filter(t => {
+        let d = new Date(t.data);
+        return d >= inizioSettimana && d <= fineSettimana;
+      });
+
+      // Ordina cronologicamente per lista e per calcolo cumulativo straordinari
+      turniFiltrati.sort((a,b) => new Date(a.data) - new Date(b.data) || a.startMin - b.startMin);
+
+      turniFiltrati.forEach(t => {
+        totOre += t.oreTotali;
+        totDiurne += t.oreDiurne;
+        totNotturne += t.oreNotturne;
+
+        // Costruisci stringhe orari per la UI
+        let sh = String(Math.floor(t.startMin/60)).padStart(2,'0');
+        let sm = String(t.startMin%60).padStart(2,'0');
+        let eh = String(Math.floor(t.endMin/60)).padStart(2,'0');
+        let em = String(t.endMin%60).padStart(2,'0');
+        
+        let festBadge = t.isFestivo ? '<span class="festivo-badge">Festivo</span>' : '';
+
+        htmlLista += `
+          <div class="turno-item">
+            <div class="turno-header">
+              <span>${t.data} ${festBadge}</span>
+              <span>${sh}:${sm} - ${eh}:${em}</span>
+            </div>
+            <div class="turno-details">
+              Tot: ${t.oreTotali.toFixed(2)}h (Diurne: ${t.oreDiurne.toFixed(2)}h | Notturne: ${t.oreNotturne.toFixed(2)}h)
+            </div>
+          </div>
+        `;
+      });
+
+      // Calcolo Straordinari Settimanali
+      let straordinari = 0;
+      if (totOre > impostazioni.monteOre) {
+          straordinari = totOre - impostazioni.monteOre;
+      }
+
+      document.getElementById('tot-settimana').innerText = totOre.toFixed(2) + "h";
+      document.getElementById('tot-diurne').innerText = totDiurne.toFixed(2) + "h";
+      document.getElementById('tot-notturne').innerText = totNotturne.toFixed(2) + "h";
+      document.getElementById('tot-straordinari').innerText = straordinari.toFixed(2) + "h";
+      
+      document.getElementById('lista-turni').innerHTML = htmlLista || "<p>Nessun turno questa settimana.</p>";
+    }
+
+    function cancellaDati() {
+      if(confirm("Sei sicuro di voler cancellare TUTTI i turni salvati?")) {
+        turni = [];
+        localStorage.removeItem('mieiTurni_v2');
+        aggiornaDashboard();
+      }
+    }
+
+    // Primo avvio
     aggiornaDashboard();
   </script>
 </body>
