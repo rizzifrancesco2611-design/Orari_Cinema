@@ -3,8 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Il Mio Orario V5</title>
+  <title>I Miei Orari V6</title>
+  <!-- Import Chart.js per i grafici -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
+    /* VARIABILI TEMA */
     :root {
       --bg-color: #f2f2f7;
       --card-bg: #ffffff;
@@ -18,7 +21,8 @@
       --badge-festivo: #ff9500;
       --badge-riposo: #ff2d55;
       --shadow: rgba(0,0,0,0.08);
-      --nav-bg: rgba(255, 255, 255, 0.9);
+      --nav-bg: rgba(255, 255, 255, 0.85);
+      --overlay: rgba(0,0,0,0.4);
     }
     
     [data-theme="dark"] {
@@ -31,204 +35,217 @@
       --border: #38383a;
       --input-bg: #2c2c2e;
       --shadow: rgba(0,0,0,0.5);
-      --nav-bg: rgba(28, 28, 30, 0.9);
+      --nav-bg: rgba(28, 28, 30, 0.85);
+      --overlay: rgba(0,0,0,0.7);
     }
 
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg-color); color: var(--text-main); margin: 0; padding: 15px; padding-bottom: 90px; transition: background 0.3s, color 0.3s; }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg-color); color: var(--text-main); margin: 0; padding: 15px; padding-bottom: 90px; transition: background 0.3s, color 0.3s; }
     
+    /* HEADER & TOGGLE */
     .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding: 0 5px; }
-    .header h1 { font-size: 24px; margin: 0; font-weight: 700; letter-spacing: -0.5px; }
-    .theme-toggle { background: var(--card-bg); border: 1px solid var(--border); color: var(--text-main); padding: 6px 12px; border-radius: 20px; font-size: 13px; cursor: pointer; box-shadow: 0 2px 5px var(--shadow); }
-
-    /* GESTIONE SEZIONI / PAGINE */
-    .view-section { display: none; }
-    .view-section.active { display: block; }
-
-    /* CARDS */
-    .card { background: var(--card-bg); padding: 18px; border-radius: 18px; box-shadow: 0 4px 15px var(--shadow); margin-bottom: 20px; transition: background 0.3s; }
-    .card h2 { font-size: 17px; margin-top: 0; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border); font-weight: 600; }
+    .header h1 { font-size: 26px; margin: 0; font-weight: 700; letter-spacing: -0.5px; }
     
-    /* FORM ELEMENTS */
-    label { display: block; font-size: 12px; font-weight: 600; margin-top: 10px; margin-bottom: 5px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;}
-    input, select { width: 100%; padding: 12px; margin-bottom: 5px; border: 1px solid var(--border); border-radius: 12px; box-sizing: border-box; font-size: 15px; background: var(--input-bg); color: var(--text-main); -webkit-appearance: none; }
-    input:focus, select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.2); }
+    .theme-toggle-container { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--text-muted); }
+    .toggle-switch { width: 44px; height: 24px; background: var(--border); border-radius: 12px; position: relative; cursor: pointer; transition: 0.3s; }
+    .toggle-switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; background: white; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: 0.3s; }
+    [data-theme="dark"] .toggle-switch { background: var(--accent); }
+    [data-theme="dark"] .toggle-switch::after { transform: translateX(20px); }
+
+    /* SEZIONI E ANIMAZIONI */
+    .view-section { display: none; opacity: 0; transform: translateY(10px); transition: opacity 0.4s ease, transform 0.4s ease; }
+    .view-section.active { display: block; opacity: 1; transform: translateY(0); }
+
+    /* CARDS E FORM */
+    .card { background: var(--card-bg); padding: 20px; border-radius: 20px; box-shadow: 0 4px 20px var(--shadow); margin-bottom: 20px; transition: background 0.3s; }
+    .card h2 { font-size: 18px; margin-top: 0; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid var(--border); font-weight: 600; }
+    label { display: block; font-size: 12px; font-weight: 600; margin-top: 12px; margin-bottom: 6px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;}
+    input, select { width: 100%; padding: 14px; margin-bottom: 5px; border: 1px solid var(--border); border-radius: 12px; font-size: 16px; background: var(--input-bg); color: var(--text-main); -webkit-appearance: none; transition: border-color 0.2s; }
+    input:focus, select:focus { outline: none; border-color: var(--accent); }
     
-    /* PULSANTI */
-    button { width: 100%; padding: 14px; background: var(--accent); color: white; border: none; border-radius: 12px; font-weight: 600; font-size: 15px; cursor: pointer; margin-top: 12px; box-shadow: 0 4px 10px rgba(0, 122, 255, 0.3); }
-    button:active { transform: scale(0.98); background: var(--accent-hover); }
-    button.danger { background: var(--input-bg); color: var(--danger); box-shadow: none; border: 1px solid var(--border); }
-    button.btn-sm { width: auto; padding: 6px 10px; font-size: 12px; margin-top: 0; box-shadow: none; }
+    button { width: 100%; padding: 15px; background: var(--accent); color: white; border: none; border-radius: 14px; font-weight: 600; font-size: 16px; cursor: pointer; margin-top: 15px; transition: transform 0.1s; }
+    button:active { transform: scale(0.96); }
+    button.danger { background: var(--danger); color: white; }
+    button.outline { background: transparent; border: 1px solid var(--danger); color: var(--danger); }
 
-    /* TABELLA MENSILE */
-    .table-custom { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
-    .table-custom th, .table-custom td { padding: 10px 8px; text-align: left; border-bottom: 1px solid var(--border); }
-    .table-custom th { color: var(--text-muted); font-size: 12px; text-transform: uppercase; }
-    .table-custom td:last-child, .table-custom th:last-child { text-align: right; font-weight: 600; }
+    /* CALENDARIO */
+    .calendar-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+    .calendar-controls button { width: auto; margin: 0; padding: 8px 16px; font-size: 14px; border-radius: 10px; background: var(--input-bg); color: var(--accent); }
+    .calendar-controls h3 { margin: 0; font-size: 16px; font-weight: 600; }
+    .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; text-align: center; }
+    .day-name { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 5px;}
+    .day-cell { aspect-ratio: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; background: var(--input-bg); border-radius: 12px; font-size: 14px; font-weight: 600; border: 1px solid var(--border); cursor: pointer; transition: 0.2s; }
+    .day-cell:active { transform: scale(0.9); }
+    .day-cell.has-work { background: rgba(0, 122, 255, 0.1); border-color: var(--accent); color: var(--accent); }
+    .day-cell.empty { background: transparent; border: none; cursor: default; }
+    .day-hours { font-size: 10px; font-weight: 700; background: var(--accent); color: white; border-radius: 4px; padding: 2px 4px; margin-top: 4px; }
 
-    /* LISTA TURNI */
-    .turno-item { background: var(--input-bg); padding: 12px; border-radius: 10px; margin-bottom: 8px; font-size: 13px; border-left: 4px solid var(--accent); border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;}
-    .turno-info { flex-grow: 1; }
-    .badge { color: white; padding: 2px 6px; border-radius: 8px; font-size: 10px; font-weight: 600; margin-left: 4px; }
+    /* TABELLE */
+    .table-custom { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .table-custom th, .table-custom td { padding: 12px 8px; text-align: left; border-bottom: 1px solid var(--border); }
+    .table-custom th { color: var(--text-muted); font-size: 12px; text-transform: uppercase; font-weight: 600;}
+    .table-custom td:last-child, .table-custom th:last-child { text-align: right; font-weight: 700; }
+
+    /* GRAFICO */
+    .chart-container { position: relative; height: 220px; width: 100%; margin-bottom: 20px; }
+
+    /* NAV IN BASSO */
+    .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--nav-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-top: 1px solid var(--border); display: grid; grid-template-columns: repeat(3, 1fr); padding: 10px 0 env(safe-area-inset-bottom, 15px) 0; z-index: 100; }
+    .nav-item { background: transparent; border: none; margin: 0; padding: 5px 0; color: var(--text-muted); font-size: 11px; font-weight: 600; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; transition: 0.2s; }
+    .nav-item span { font-size: 20px; transition: transform 0.2s; }
+    .nav-item.active { color: var(--accent); }
+    .nav-item.active span { transform: scale(1.15); }
+
+    /* TOAST NOTIFICATION */
+    .toast { position: fixed; top: -100px; left: 50%; transform: translateX(-50%); background: var(--card-bg); color: var(--text-main); padding: 14px 24px; border-radius: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); font-weight: 600; font-size: 14px; z-index: 2000; transition: top 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; align-items: center; gap: 10px; border: 1px solid var(--border);}
+    .toast.show { top: 40px; }
+    .toast-icon { font-size: 18px; }
+
+    /* MODAL CUSTOM */
+    .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--overlay); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); z-index: 1500; opacity: 0; pointer-events: none; transition: 0.3s; }
+    .overlay.show { opacity: 1; pointer-events: auto; }
+    .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.9); background: var(--card-bg); padding: 25px; border-radius: 20px; width: 85%; max-width: 320px; z-index: 1600; opacity: 0; pointer-events: none; transition: 0.3s; box-shadow: 0 20px 40px rgba(0,0,0,0.2); text-align: center;}
+    .modal.show { opacity: 1; pointer-events: auto; transform: translate(-50%, -50%) scale(1); }
+    .modal h3 { margin-top: 0; margin-bottom: 10px; font-size: 18px; }
+    .modal p { color: var(--text-muted); font-size: 14px; margin-bottom: 20px; }
+    .modal-actions { display: flex; gap: 10px; }
+    .modal-actions button { margin-top: 0; }
+
+    /* BOTTOM SHEET */
+    .bottom-sheet { position: fixed; bottom: -100%; left: 0; width: 100%; background: var(--card-bg); border-radius: 25px 25px 0 0; z-index: 1600; padding: 25px 20px calc(20px + env(safe-area-inset-bottom, 0px)); transition: bottom 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1); box-shadow: 0 -10px 40px rgba(0,0,0,0.15); max-height: 85vh; overflow-y: auto;}
+    .bottom-sheet.show { bottom: 0; }
+    .sheet-handle { width: 40px; height: 5px; background: var(--border); border-radius: 3px; margin: 0 auto 20px auto; }
+    
+    .turno-list-item { background: var(--input-bg); padding: 15px; border-radius: 14px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--accent); }
+    .badge { color: white; padding: 3px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; margin-left: 6px; text-transform: uppercase;}
     .badge-festivo { background: var(--badge-festivo); }
     .badge-riposo { background: var(--badge-riposo); }
-
-    /* CALENDARIO COMPATTO */
-    .calendar-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-    .calendar-controls button { width: auto; margin: 0; padding: 6px 12px; font-size: 13px; box-shadow: none; border-radius: 8px; }
-    .calendar-controls h3 { margin: 0; font-size: 15px; font-weight: 600; }
-    .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; }
-    .day-name { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px;}
-    .day-cell { min-height: 48px; display: flex; flex-direction: column; justify-content: flex-start; align-items: center; background: var(--input-bg); border-radius: 8px; font-size: 12px; font-weight: 600; padding-top: 4px; border: 1px solid var(--border); }
-    .day-cell.has-work { background: rgba(0, 122, 255, 0.12); border-color: var(--accent); color: var(--accent); }
-    .day-cell.empty { background: transparent; border: none; }
-    .day-hours { font-size: 9px; font-weight: 700; background: var(--accent); color: white; border-radius: 4px; padding: 1px 3px; margin-top: 3px; }
-
-    /* BOTTOM NAVIGATION BAR (GUI IN BASSO) */
-    .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--nav-bg); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border-top: 1px solid var(--border); display: grid; grid-template-columns: repeat(3, 1fr); padding: 8px 0 env(safe-area-inset-bottom, 8px) 0; z-index: 1000; box-shadow: 0 -4px 15px rgba(0,0,0,0.05); }
-    .nav-item { background: transparent; border: none; box-shadow: none; margin: 0; padding: 6px 0; color: var(--text-muted); font-size: 11px; font-weight: 500; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; }
-    .nav-item span { font-size: 18px; }
-    .nav-item.active { color: var(--accent); font-weight: 700; }
   </style>
 </head>
 <body>
 
-  <div class="header">
-    <h1 id="app-title">Calendario</h1>
-    <button class="theme-toggle" onclick="toggleTheme()" id="btn-theme">🌙 Scura</button>
+  <!-- TOAST NOTIFICATION -->
+  <div class="toast" id="toastBox">
+    <span class="toast-icon">✅</span>
+    <span id="toastMsg">Azione completata</span>
   </div>
 
-  <!-- SEZIONE 1: CALENDARIO -->
+  <!-- OVERLAY E MODAL CONFERMA -->
+  <div class="overlay" id="mainOverlay" onclick="closeModals()"></div>
+  <div class="modal" id="confirmModal">
+    <h3 id="modalTitle">Attenzione</h3>
+    <p id="modalDesc">Sei sicuro di voler procedere?</p>
+    <div class="modal-actions">
+      <button class="outline" onclick="closeModals()">Annulla</button>
+      <button class="danger" id="modalConfirmBtn">Conferma</button>
+    </div>
+  </div>
+
+  <!-- BOTTOM SHEET DETTAGLI GIORNO -->
+  <div class="bottom-sheet" id="daySheet">
+    <div class="sheet-handle"></div>
+    <h2 id="sheetDate" style="margin-top:0; font-size:20px;">Dettagli Turno</h2>
+    <div id="sheetContent"></div>
+    <button class="outline" style="margin-top: 20px;" onclick="closeModals()">Chiudi</button>
+  </div>
+
+  <!-- HEADER APP -->
+  <div class="header">
+    <h1 id="app-title">Calendario</h1>
+    <div class="theme-toggle-container">
+      <div class="toggle-switch" onclick="toggleTheme()" id="btn-theme"></div>
+    </div>
+  </div>
+
+  <!-- 1. CALENDARIO -->
   <div id="view-calendario" class="view-section active">
     <div class="card">
       <div class="calendar-controls">
-        <button onclick="cambiaMese(-1)">◀</button>
+        <button onclick="cambiaMese(-1)">◀ Mese</button>
         <h3 id="mese-corrente-label">Mese Anno</h3>
-        <button onclick="cambiaMese(1)">▶</button>
+        <button onclick="cambiaMese(1)">Mese ▶</button>
       </div>
       <div class="calendar-grid" id="calendar-header">
         <div class="day-name">Lun</div><div class="day-name">Mar</div><div class="day-name">Mer</div>
         <div class="day-name">Gio</div><div class="day-name">Ven</div><div class="day-name">Sab</div><div class="day-name">Dom</div>
       </div>
-      <div class="calendar-grid" id="calendar-days"></div>
-    </div>
-    
-    <div class="card">
-      <h2>Dettaglio Mese Selezionato</h2>
-      <div id="info-giorno-selezionato" style="font-size: 13px; color: var(--text-muted);">
-        Seleziona un giorno dal calendario per vedere i dettagli dei turni.
-      </div>
+      <div class="calendar-grid" id="calendar-days" style="margin-top: 10px;"></div>
     </div>
   </div>
 
-  <!-- SEZIONE 2: INSERISCI E GESTISCI TURNI -->
+  <!-- 2. INSERISCI TURNI -->
   <div id="view-inserisci" class="view-section">
     <div class="card">
-      <h2>Registra Turno</h2>
-      <label>Data Inizio Turno</label>
+      <h2>Nuovo Turno</h2>
+      <label>Data</label>
       <input type="date" id="data-turno">
-      
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-        <div>
-          <label>Ora Inizio</label>
-          <input type="time" id="ora-inizio" required>
-        </div>
-        <div>
-          <label>Ora Fine</label>
-          <input type="time" id="ora-fine" required>
-        </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+        <div><label>Inizio</label><input type="time" id="ora-inizio" required></div>
+        <div><label>Fine</label><input type="time" id="ora-fine" required></div>
       </div>
-
-      <label>Pausa (minuti non retribuiti)</label>
+      <label>Pausa (minuti non pagati)</label>
       <input type="number" id="pausa" value="0">
-
-      <label>Contesto Particolare</label>
+      <label>Contesto (Opzionale)</label>
       <select id="tipo-giornata">
         <option value="normale">Giorno Lavorativo Normale</option>
         <option value="festivo">Giorno Festivo</option>
         <option value="riposo_mancato">Riposo Non Goduto (7° Giorno)</option>
       </select>
-
-      <button onclick="salvaTurno()">Salva Turno</button>
-    </div>
-
-    <div class="card">
-      <h2>Storico Turni Registrati</h2>
-      <div id="lista-turni-completa"></div>
+      <button onclick="salvaTurno()">Salva Ora</button>
     </div>
   </div>
 
-  <!-- SEZIONE 3: RIEPILOGO MENSILE E SOLDI -->
+  <!-- 3. RIEPILOGO MENSILE E SOLDI -->
   <div id="view-riepilogo" class="view-section">
     <div class="card">
-      <div class="calendar-controls" style="margin-bottom: 10px;">
+      <div class="calendar-controls" style="margin-bottom: 20px;">
         <button onclick="cambiaMeseRiepilogo(-1)">◀</button>
         <h3 id="riepilogo-mese-label">Mese Anno</h3>
         <button onclick="cambiaMeseRiepilogo(1)">▶</button>
       </div>
+      
+      <!-- GRAFICO INTERATTIVO -->
+      <div class="chart-container">
+        <canvas id="myChart"></canvas>
+      </div>
     </div>
 
     <div class="card">
-      <h2>Tabella Ore Mensili</h2>
-      <table class="table-custom" id="tabella-ore-mensili">
-        <!-- Generato da JS -->
-      </table>
+      <h2>Dettaglio Ore</h2>
+      <table class="table-custom" id="tabella-ore-mensili"></table>
     </div>
 
     <div class="card">
-      <h2>Tabella Guadagni Mensili</h2>
-      <table class="table-custom" id="tabella-soldi-mensili">
-        <!-- Generato da JS -->
-      </table>
+      <h2>Stima Busta Paga</h2>
+      <table class="table-custom" id="tabella-soldi-mensili"></table>
     </div>
 
     <div class="card">
-      <h2>Impostazioni & Tariffe CCNL</h2>
+      <h2>Impostazioni & Tariffe</h2>
       <label>Paga Base Oraria (€)</label>
       <input type="number" id="paga-base" step="0.01" value="6.23" onchange="salvaImpostazioni()">
-
-      <label>Monte ore settimanale (per straordinari)</label>
+      <label>Monte ore settimanale</label>
       <select id="monte-ore" onchange="salvaImpostazioni()">
         <option value="40" selected>40 ore</option>
         <option value="24">24 ore</option>
         <option value="20">20 ore</option>
       </select>
-
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-        <div>
-          <label>Inizio Notte</label>
-          <input type="time" id="inizio-notte" value="22:00" onchange="salvaImpostazioni()">
-        </div>
-        <div>
-          <label>Fine Notte</label>
-          <input type="time" id="fine-notte" value="06:00" onchange="salvaImpostazioni()">
-        </div>
+        <div><label>Inizio Notte</label><input type="time" id="inizio-notte" value="22:00" onchange="salvaImpostazioni()"></div>
+        <div><label>Fine Notte</label><input type="time" id="fine-notte" value="06:00" onchange="salvaImpostazioni()"></div>
       </div>
-
       <h3 style="font-size: 14px; margin-top: 15px; border-bottom: 1px solid var(--border); padding-bottom: 4px;">Maggiorazioni (%)</h3>
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-        <div>
-          <label>Straordinario (%)</label>
-          <input type="number" id="perc-straordinario" value="25" onchange="salvaImpostazioni()">
-        </div>
-        <div>
-          <label>Notturno (%)</label>
-          <input type="number" id="perc-notturno" value="50" onchange="salvaImpostazioni()">
-        </div>
-        <div>
-          <label>Festivo (%)</label>
-          <input type="number" id="perc-festivo" value="50" onchange="salvaImpostazioni()">
-        </div>
-        <div>
-          <label>Riposo Mancato (%)</label>
-          <input type="number" id="perc-riposo" value="75" onchange="salvaImpostazioni()">
-        </div>
+        <div><label>Straordinari</label><input type="number" id="perc-straordinario" value="25" onchange="salvaImpostazioni()"></div>
+        <div><label>Notturno</label><input type="number" id="perc-notturno" value="50" onchange="salvaImpostazioni()"></div>
+        <div><label>Festivo</label><input type="number" id="perc-festivo" value="50" onchange="salvaImpostazioni()"></div>
+        <div><label>Riposo</label><input type="number" id="perc-riposo" value="75" onchange="salvaImpostazioni()"></div>
       </div>
-      
-      <button class="danger" style="margin-top: 20px;" onclick="cancellaDati()">Cancella Tutti i Dati</button>
+      <button class="outline" style="margin-top: 25px;" onclick="richiediCancellazione()">Inizializza App (Cancella Dati)</button>
     </div>
   </div>
 
-  <!-- BOTTOM NAVIGATION BAR -->
+  <!-- BOTTOM NAV -->
   <nav class="bottom-nav">
     <button class="nav-item active" onclick="switchTab('calendario', this)">
       <span>📅</span>Calendario
@@ -242,340 +259,283 @@
   </nav>
 
   <script>
-    let isDark = localStorage.getItem('theme_v5') === 'dark';
-    const body = document.documentElement;
-    const btnTheme = document.getElementById('btn-theme');
+    // --- UI UX FUNZIONI (TOAST, MODALS, THEME) ---
+    function showToast(msg, icon="✅") {
+      const tb = document.getElementById('toastBox');
+      document.getElementById('toastMsg').innerText = msg;
+      document.querySelector('.toast-icon').innerText = icon;
+      tb.classList.add('show');
+      setTimeout(() => tb.classList.remove('show'), 3000);
+    }
 
+    function closeModals() {
+      document.getElementById('mainOverlay').classList.remove('show');
+      document.getElementById('confirmModal').classList.remove('show');
+      document.getElementById('daySheet').classList.remove('show');
+    }
+
+    let confirmCallback = null;
+    function showConfirm(title, desc, callback) {
+      document.getElementById('modalTitle').innerText = title;
+      document.getElementById('modalDesc').innerText = desc;
+      confirmCallback = callback;
+      document.getElementById('mainOverlay').classList.add('show');
+      document.getElementById('confirmModal').classList.add('show');
+    }
+    
+    document.getElementById('modalConfirmBtn').onclick = () => {
+      if(confirmCallback) confirmCallback();
+      closeModals();
+    };
+
+    let isDark = localStorage.getItem('theme_v6') === 'dark';
     function applyTheme() {
-      if(isDark) {
-        body.setAttribute('data-theme', 'dark');
-        btnTheme.innerText = '☀️ Chiara';
-      } else {
-        body.removeAttribute('data-theme');
-        btnTheme.innerText = '🌙 Scura';
-      }
+      if(isDark) document.documentElement.setAttribute('data-theme', 'dark');
+      else document.documentElement.removeAttribute('data-theme');
     }
     function toggleTheme() {
       isDark = !isDark;
-      localStorage.setItem('theme_v5', isDark ? 'dark' : 'light');
+      localStorage.setItem('theme_v6', isDark ? 'dark' : 'light');
       applyTheme();
+      if(document.getElementById('view-riepilogo').classList.contains('active')) renderRiepilogoMensile(); // Update chart colors
     }
     applyTheme();
 
-    // Gestione Navigazione Tab
     function switchTab(tabName, el) {
-      document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
+      document.querySelectorAll('.view-section').forEach(sec => {
+        sec.style.opacity = 0;
+        setTimeout(() => sec.classList.remove('active'), 200);
+      });
       document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
       
-      document.getElementById('view-' + tabName).classList.add('active');
+      setTimeout(() => {
+        const newSec = document.getElementById('view-' + tabName);
+        newSec.classList.add('active');
+        // trigger reflow
+        void newSec.offsetWidth;
+        newSec.style.opacity = 1;
+        
+        if(tabName === 'riepilogo') renderRiepilogoMensile();
+      }, 200);
+      
       el.classList.add('active');
-
       const titles = { calendario: 'Calendario', inserisci: 'Registra Turno', riepilogo: 'Riepilogo Mensile' };
       document.getElementById('app-title').innerText = titles[tabName];
-      
-      aggiornaTutto();
     }
 
+    // --- LOGICA DATI ---
     document.getElementById('data-turno').valueAsDate = new Date();
-    let turni = JSON.parse(localStorage.getItem('mieiTurni_v5')) || [];
-    
-    let impostazioni = JSON.parse(localStorage.getItem('mieImpostazioni_v5')) || { 
+    let turni = JSON.parse(localStorage.getItem('mieiTurni_v6')) || [];
+    let impostazioni = JSON.parse(localStorage.getItem('mieImpostazioni_v6')) || { 
       pagaBase: 6.23, monteOre: 40, inizioNotte: '22:00', fineNotte: '06:00',
       percStraordinario: 25, percNotturno: 50, percFestivo: 50, percRiposo: 75
     };
 
-    document.getElementById('paga-base').value = impostazioni.pagaBase;
-    document.getElementById('monte-ore').value = impostazioni.monteOre;
-    document.getElementById('inizio-notte').value = impostazioni.inizioNotte;
-    document.getElementById('fine-notte').value = impostazioni.fineNotte;
-    document.getElementById('perc-straordinario').value = impostazioni.percStraordinario;
-    document.getElementById('perc-notturno').value = impostazioni.percNotturno;
-    document.getElementById('perc-festivo').value = impostazioni.percFestivo;
-    document.getElementById('perc-riposo').value = impostazioni.percRiposo;
+    ['paga-base', 'monte-ore', 'inizio-notte', 'fine-notte', 'perc-straordinario', 'perc-notturno', 'perc-festivo', 'perc-riposo'].forEach(id => {
+      let key = id.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
+      document.getElementById(id).value = impostazioni[key];
+    });
 
     function salvaImpostazioni() {
-      impostazioni.pagaBase = parseFloat(document.getElementById('paga-base').value) || 0;
-      impostazioni.monteOre = parseFloat(document.getElementById('monte-ore').value);
-      impostazioni.inizioNotte = document.getElementById('inizio-notte').value;
-      impostazioni.fineNotte = document.getElementById('fine-notte').value;
-      impostazioni.percStraordinario = parseFloat(document.getElementById('perc-straordinario').value) || 0;
-      impostazioni.percNotturno = parseFloat(document.getElementById('perc-notturno').value) || 0;
-      impostazioni.percFestivo = parseFloat(document.getElementById('perc-festivo').value) || 0;
-      impostazioni.percRiposo = parseFloat(document.getElementById('perc-riposo').value) || 0;
-
-      localStorage.setItem('mieImpostazioni_v5', JSON.stringify(impostazioni));
+      ['paga-base', 'monte-ore', 'inizio-notte', 'fine-notte', 'perc-straordinario', 'perc-notturno', 'perc-festivo', 'perc-riposo'].forEach(id => {
+        let key = id.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
+        let val = document.getElementById(id).value;
+        impostazioni[key] = id.includes('notte') ? val : parseFloat(val) || 0;
+      });
+      localStorage.setItem('mieImpostazioni_v6', JSON.stringify(impostazioni));
+      showToast("Impostazioni salvate", "⚙️");
       aggiornaTutto();
     }
 
-    function isFestivo(dateObj) {
-      const d = dateObj.getDate();
-      const m = dateObj.getMonth() + 1;
-      const festiviFissi = ["1-1", "6-1", "25-4", "1-5", "2-6", "15-8", "1-11", "8-12", "25-12", "26-12"];
-      return festiviFissi.includes(`${d}-${m}`);
-    }
-
-    function timeToMinutes(timeStr) {
-      const [h, m] = timeStr.split(':').map(Number);
-      return h * 60 + m;
+    function timeToMinutes(ts) { const [h, m] = ts.split(':').map(Number); return h * 60 + m; }
+    function isFestivo(dObj) {
+      const d = dObj.getDate(), m = dObj.getMonth() + 1;
+      return ["1-1", "6-1", "25-4", "1-5", "2-6", "15-8", "1-11", "8-12", "25-12", "26-12"].includes(`${d}-${m}`);
     }
 
     function salvaTurno() {
-      const dataStr = document.getElementById('data-turno').value;
-      const inizioStr = document.getElementById('ora-inizio').value;
-      const fineStr = document.getElementById('ora-fine').value;
-      const pausa = parseInt(document.getElementById('pausa').value) || 0;
-      const tipoGiornata = document.getElementById('tipo-giornata').value;
+      const dStr = document.getElementById('data-turno').value;
+      const iStr = document.getElementById('ora-inizio').value;
+      const fStr = document.getElementById('ora-fine').value;
+      const p = parseInt(document.getElementById('pausa').value) || 0;
+      const tipo = document.getElementById('tipo-giornata').value;
 
-      if(!dataStr || !inizioStr || !fineStr) return alert("Compila tutti i campi orari.");
+      if(!dStr || !iStr || !fStr) return showToast("Compila tutti i campi!", "⚠️");
 
-      let inizioMin = timeToMinutes(inizioStr);
-      let fineMin = timeToMinutes(fineStr);
-      let dataInizioObj = new Date(dataStr);
-      
-      let badgeTypeG1 = isFestivo(dataInizioObj) ? 'festivo' : 'normale';
-      if(tipoGiornata !== 'normale') badgeTypeG1 = tipoGiornata;
+      let iMin = timeToMinutes(iStr), fMin = timeToMinutes(fStr), dObj = new Date(dStr);
+      let bG1 = (tipo !== 'normale') ? tipo : (isFestivo(dObj) ? 'festivo' : 'normale');
 
-      if (fineMin > inizioMin) {
-        calcolaESalvaFrammento(dataStr, inizioMin, fineMin, pausa, badgeTypeG1, inizioStr, fineStr);
+      if (fMin > iMin) {
+        calcolaF(dStr, iMin, fMin, p, bG1, iStr, fStr);
       } else {
-        calcolaESalvaFrammento(dataStr, inizioMin, 1440, pausa, badgeTypeG1, inizioStr, "24:00"); 
-        let dataFineObj = new Date(dataInizioObj);
-        dataFineObj.setDate(dataFineObj.getDate() + 1);
-        let dataFineStr = dataFineObj.toISOString().split('T')[0];
-        let badgeTypeG2 = isFestivo(dataFineObj) ? 'festivo' : 'normale';
-        if(tipoGiornata === 'riposo_mancato') badgeTypeG2 = 'riposo_mancato';
-        calcolaESalvaFrammento(dataFineStr, 0, fineMin, 0, badgeTypeG2, "00:00", fineStr);
+        calcolaF(dStr, iMin, 1440, p, bG1, iStr, "24:00"); 
+        let dObj2 = new Date(dObj); dObj2.setDate(dObj2.getDate() + 1);
+        let dStr2 = dObj2.toISOString().split('T')[0];
+        let bG2 = (tipo === 'riposo_mancato') ? 'riposo_mancato' : (isFestivo(dObj2) ? 'festivo' : 'normale');
+        calcolaF(dStr2, 0, fMin, 0, bG2, "00:00", fStr);
       }
-
-      localStorage.setItem('mieiTurni_v5', JSON.stringify(turni));
+      localStorage.setItem('mieiTurni_v6', JSON.stringify(turni));
       aggiornaTutto();
-      alert("Turno salvato con successo!");
-      
-      document.getElementById('ora-inizio').value = '';
-      document.getElementById('ora-fine').value = '';
-      document.getElementById('pausa').value = '0';
+      showToast("Turno registrato con successo!");
+      document.getElementById('ora-inizio').value = ''; document.getElementById('ora-fine').value = ''; document.getElementById('pausa').value = '0';
     }
 
-    function calcolaESalvaFrammento(data, startMin, endMin, pausa, badgeType, strInizio, strFine) {
-      if (startMin >= endMin) return;
-      const notteInizio = timeToMinutes(impostazioni.inizioNotte);
-      const notteFine = timeToMinutes(impostazioni.fineNotte);
-
-      let diurne = 0; let notturne = 0;
-      for (let m = startMin; m < endMin; m++) {
-        let isMinNotturno = false;
-        if (notteInizio > notteFine) {
-             if (m >= notteInizio || m < notteFine) isMinNotturno = true;
-        } else {
-             if (m >= notteInizio && m < notteFine) isMinNotturno = true;
-        }
-        if (isMinNotturno) notturne++; else diurne++;
+    function calcolaF(data, sMin, eMin, p, badge, sStr, eStr) {
+      if (sMin >= eMin) return;
+      const nI = timeToMinutes(impostazioni.inizioNotte), nF = timeToMinutes(impostazioni.fineNotte);
+      let di = 0, no = 0;
+      for (let m = sMin; m < eMin; m++) {
+        let isN = (nI > nF) ? (m >= nI || m < nF) : (m >= nI && m < nF);
+        isN ? no++ : di++;
       }
+      if (di >= p) di -= p; else { p -= di; di = 0; no -= p; }
+      if(no < 0) no = 0;
+      turni.push({ id: Date.now()+Math.random(), data: data, strInizio: sStr, strFine: eStr, oreTotali: +((di+no)/60).toFixed(4), oreDiurne: +(di/60).toFixed(4), oreNotturne: +(no/60).toFixed(4), badge: badge });
+    }
 
-      let p = pausa;
-      if (diurne >= p) { diurne -= p; } else { p -= diurne; diurne = 0; notturne -= p; }
-      if(notturne < 0) notturne = 0;
-
-      turni.push({
-        id: Date.now() + Math.random(),
-        data: data,
-        strInizio: strInizio,
-        strFine: strFine,
-        oreTotali: +((diurne + notturne) / 60).toFixed(4),
-        oreDiurne: +(diurne / 60).toFixed(4),
-        oreNotturne: +(notturne / 60).toFixed(4),
-        badge: badgeType
+    function richiediEliminazione(id) {
+      showConfirm("Elimina Turno", "Vuoi cancellare questo inserimento?", () => {
+        turni = turni.filter(t => t.id !== id);
+        localStorage.setItem('mieiTurni_v6', JSON.stringify(turni));
+        closeModals();
+        showToast("Turno eliminato", "🗑️");
+        aggiornaTutto();
       });
     }
 
-    function eliminaTurno(id) {
-      if(confirm("Vuoi eliminare questo turno?")) {
-        turni = turni.filter(t => t.id !== id);
-        localStorage.setItem('mieiTurni_v5', JSON.stringify(turni));
-        aggiornaTutto();
-      }
-    }
-
-    // --- CALENDARIO INTERATTIVO ---
-    let currentMonthDate = new Date();
-    function cambiaMese(step) {
-      currentMonthDate.setMonth(currentMonthDate.getMonth() + step);
-      renderCalendar();
-    }
+    // --- CALENDARIO E BOTTOM SHEET ---
+    let cDate = new Date();
+    function cambiaMese(step) { cDate.setMonth(cDate.getMonth() + step); renderCalendar(); }
 
     function renderCalendar() {
-      const year = currentMonthDate.getFullYear();
-      const month = currentMonthDate.getMonth();
-      const monthNames = ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"];
-      
-      document.getElementById('mese-corrente-label').innerText = `${monthNames[month]} ${year}`;
-      
-      const firstDay = new Date(year, month, 1);
-      const lastDay = new Date(year, month + 1, 0);
-      const daysInMonth = lastDay.getDate();
-      
-      let startDayOfWeek = firstDay.getDay();
-      startDayOfWeek = startDayOfWeek === 0 ? 6 : startDayOfWeek - 1; 
+      const y = cDate.getFullYear(), m = cDate.getMonth();
+      const mN = ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"];
+      document.getElementById('mese-corrente-label').innerText = `${mN[m]} ${y}`;
+      const fDay = new Date(y, m, 1), lDay = new Date(y, m + 1, 0).getDate();
+      let sDW = fDay.getDay(); sDW = sDW === 0 ? 6 : sDW - 1; 
 
-      const calendarContainer = document.getElementById('calendar-days');
-      calendarContainer.innerHTML = '';
+      const cCont = document.getElementById('calendar-days'); cCont.innerHTML = '';
+      const orePG = {}; turni.forEach(t => { orePG[t.data] = (orePG[t.data]||0) + t.oreTotali; });
 
-      // Mappa ore per giorno nel mese
-      const orePerGiorno = {};
-      turni.forEach(t => {
-        if(!orePerGiorno[t.data]) orePerGiorno[t.data] = 0;
-        orePerGiorno[t.data] += t.oreTotali;
-      });
-
-      for (let i = 0; i < startDayOfWeek; i++) {
-        calendarContainer.innerHTML += `<div class="day-cell empty"></div>`;
-      }
-
-      for (let day = 1; day <= daysInMonth; day++) {
-        const dataStr = `${year}-${String(month+1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-        const hasWork = orePerGiorno[dataStr] !== undefined;
-        let cellClass = hasWork ? "day-cell has-work" : "day-cell";
-        let hoursHTML = hasWork ? `<div class="day-hours">${orePerGiorno[dataStr].toFixed(1)}h</div>` : ``;
-        
-        calendarContainer.innerHTML += `
-          <div class="${cellClass}" onclick="mostraDettagliGiorno('${dataStr}')">
-            ${day}
-            ${hoursHTML}
-          </div>
-        `;
+      for (let i = 0; i < sDW; i++) cCont.innerHTML += `<div class="day-cell empty"></div>`;
+      for (let day = 1; day <= lDay; day++) {
+        const dS = `${y}-${String(m+1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const has = orePG[dS] !== undefined;
+        cCont.innerHTML += `
+          <div class="day-cell ${has?'has-work':''}" onclick="apriSheet('${dS}')">
+            ${day} ${has ? `<div class="day-hours">${orePG[dS].toFixed(1)}h</div>` : ''}
+          </div>`;
       }
     }
 
-    function mostraDettagliGiorno(dataStr) {
-      const turniDelGiorno = turni.filter(t => t.data === dataStr);
-      const container = document.getElementById('info-giorno-selezionato');
-      
-      if(turniDelGiorno.length === 0) {
-        container.innerHTML = `Nessun turno registrato il ${dataStr.split('-').reverse().join('/')}.`;
-        return;
+    function apriSheet(dStr) {
+      const tG = turni.filter(t => t.data === dStr);
+      const dIta = dStr.split('-').reverse().join('/');
+      document.getElementById('sheetDate').innerText = `Turni del ${dIta}`;
+      let html = '';
+      if(tG.length === 0) html = `<p style="color:var(--text-muted); font-size:14px;">Nessun turno registrato in questa data.</p>`;
+      else {
+        tG.forEach(t => {
+          let bH = '';
+          if(t.badge === 'festivo') bH = `<span class="badge badge-festivo">Festivo</span>`;
+          if(t.badge === 'riposo_mancato') bH = `<span class="badge badge-riposo">Riposo</span>`;
+          html += `
+            <div class="turno-list-item">
+              <div>
+                <strong style="font-size:15px;">${t.strInizio} - ${t.strFine}</strong> ${bH}<br>
+                <span style="font-size:13px; color:var(--text-muted);">Tot: ${t.oreTotali.toFixed(2)}h (Notte: ${t.oreNotturne.toFixed(1)}h)</span>
+              </div>
+              <button class="outline" style="width:auto; padding:8px 12px; font-size:12px;" onclick="richiediEliminazione(${t.id})">Elimina</button>
+            </div>`;
+        });
       }
-
-      let html = `<strong>Data: ${dataStr.split('-').reverse().join('/')}</strong><br><br>`;
-      turniDelGiorno.forEach(t => {
-        let badgeHTML = '';
-        if(t.badge === 'festivo') badgeHTML = `<span class="badge badge-festivo">Festivo</span>`;
-        if(t.badge === 'riposo_mancato') badgeHTML = `<span class="badge badge-riposo">Mancato Riposo</span>`;
-        html += `• ${t.strInizio} - ${t.strFine} | <strong>${t.oreTotali.toFixed(2)}h</strong> ${badgeHTML}<br>`;
-      });
-      container.innerHTML = html;
+      document.getElementById('sheetContent').innerHTML = html;
+      document.getElementById('mainOverlay').classList.add('show');
+      document.getElementById('daySheet').classList.add('show');
     }
 
-    // --- RIEPILOGO MENSILE E TABELLE ---
-    let currentRiepilogoDate = new Date();
-    function cambiaMeseRiepilogo(step) {
-      currentRiepilogoDate.setMonth(currentRiepilogoDate.getMonth() + step);
-      renderRiepilogoMensile();
-    }
+    // --- RIEPILOGO, GRAFICO E SOLDI ---
+    let rDate = new Date();
+    let myChart = null;
+
+    function cambiaMeseRiepilogo(step) { rDate.setMonth(rDate.getMonth() + step); renderRiepilogoMensile(); }
 
     function renderRiepilogoMensile() {
-      const year = currentRiepilogoDate.getFullYear();
-      const month = currentRiepilogoDate.getMonth();
-      const monthNames = ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"];
-      document.getElementById('riepilogo-mese-label').innerText = `${monthNames[month]} ${year}`;
+      const y = rDate.getFullYear(), m = rDate.getMonth();
+      const mN = ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"];
+      document.getElementById('riepilogo-mese-label').innerText = `${mN[m]} ${y}`;
 
-      // Filtra i turni di questo mese
-      const turniMese = turni.filter(t => {
-        let d = new Date(t.data);
-        return d.getFullYear() === year && d.getMonth() === month;
-      });
+      const tM = turni.filter(t => new Date(t.data).getFullYear() === y && new Date(t.data).getMonth() === m);
+      let tO = 0, tD = 0, tN = 0, tF = 0, tR = 0;
+      tM.forEach(t => { tO+=t.oreTotali; tD+=t.oreDiurne; tN+=t.oreNotturne; if(t.badge==='festivo')tF+=t.oreTotali; if(t.badge==='riposo_mancato')tR+=t.oreTotali; });
 
-      let totOre = 0, totDiurne = 0, totNotturne = 0, totFestive = 0, totRiposo = 0;
+      let sett = tM.length > 0 ? 4.33 : 0;
+      let sM = tO > (impostazioni.monteOre * sett) ? (tO - (impostazioni.monteOre * sett)) : 0;
+      let oN = tO > sM ? (tO - sM) : tO;
 
-      turniMese.forEach(t => {
-        totOre += t.oreTotali;
-        totDiurne += t.oreDiurne;
-        totNotturne += t.oreNotturne;
-        if(t.badge === 'festivo') totFestive += t.oreTotali;
-        if(t.badge === 'riposo_mancato') totRiposo += t.oreTotali;
-      });
-
-      // Calcolo straordinari (basato sul monte ore settimanale spalmato/verificato sui turni)
-      // Per semplicità mensile precisa, calcoliamo le settimane dell'anno o stimiamo basandoci sulle ore standard vs monte ore
-      // Stima straordinari mensili (ore totali oltre la media settimanale rapportata al mese)
-      let settimaneNelMese = turniMese.length > 0 ? 4.33 : 0;
-      let monteOreMensile = impostazioni.monteOre * settimaneNelMese;
-      let straordinariMensili = totOre > monteOreMensile ? (totOre - monteOreMensile) : 0;
-      let oreNormaliMensili = totOre > straordinariMensili ? (totOre - straordinariMensili) : totOre;
-
-      // Tabella 1: Ore Mensili
-      let htmlOre = `
-        <tr><th>Tipologia Ore</th><th>Totale Mese</th></tr>
-        <tr><td>Ore Totali Lavorate</td><td>${totOre.toFixed(2)}h</td></tr>
-        <tr><td>Ore Diurne</td><td>${totDiurne.toFixed(2)}h</td></tr>
-        <tr><td>Ore Notturne</td><td>${totNotturne.toFixed(2)}h</td></tr>
-        <tr><td>Ore Straordinarie (Extra)</td><td>${straordinariMensili.toFixed(2)}h</td></tr>
-        <tr><td>Ore in Giorni Festivi</td><td>${totFestive.toFixed(2)}h</td></tr>
-        <tr><td>Ore Riposo Non Goduto</td><td>${totRiposo.toFixed(2)}h</td></tr>
+      // Aggiorna Tabelle
+      document.getElementById('tabella-ore-mensili').innerHTML = `
+        <tr><th>Tipologia</th><th>Ore</th></tr>
+        <tr><td>Lavorate (Totali)</td><td>${tO.toFixed(2)}h</td></tr>
+        <tr><td>Diurne Normali</td><td>${tD.toFixed(2)}h</td></tr>
+        <tr><td>Notturne</td><td>${tN.toFixed(2)}h</td></tr>
+        <tr><td>Straordinari (Stima)</td><td>${sM.toFixed(2)}h</td></tr>
       `;
-      document.getElementById('tabella-ore-mensili').innerHTML = htmlOre;
 
-      // Tabella 2: Guadagni Mensili
-      let paga = impostazioni.pagaBase;
-      let compensoBase = oreNormaliMensili * paga;
-      let compensoStraordinari = straordinariMensili * paga * (impostazioni.percStraordinario / 100);
-      let compensoNotturne = totNotturne * paga * (impostazioni.percNotturno / 100);
-      let compensoFestivi = totFestive * paga * (impostazioni.percFestivo / 100);
-      let compensoRiposo = totRiposo * paga * (impostazioni.percRiposo / 100);
+      let p = impostazioni.pagaBase;
+      let cB = oN * p, cS = sM * p * (impostazioni.percStraordinario/100), cN = tN * p * (impostazioni.percNotturno/100), cF = tF * p * (impostazioni.percFestivo/100), cR = tR * p * (impostazioni.percRiposo/100);
+      let tot = cB + cS + cN + cF + cR;
 
-      let compensoTotaleNetto = compensoBase + compensoStraordinari + compensoNotturne + compensoFestivi + compensoRiposo;
-
-      let htmlSoldi = `
-        <tr><th>Voce Compenso</th><th>Importo (€)</th></tr>
-        <tr><td>Ore Normali / Standard</td><td>€ ${compensoBase.toFixed(2)}</td></tr>
-        <tr><td>Maggiorazione Straordinari</td><td>€ ${compensoStraordinari.toFixed(2)}</td></tr>
-        <tr><td>Maggiorazione Notturna</td><td>€ ${compensoNotturne.toFixed(2)}</td></tr>
-        <tr><td>Compensi Festivi</td><td>€ ${compensoFestivi.toFixed(2)}</td></tr>
-        <tr><td>Compensi Riposo Mancato</td><td>€ ${compensoRiposo.toFixed(2)}</td></tr>
-        <tr style="border-top: 2px solid var(--accent); font-weight: bold;"><td>TOTALE STIMATO MESE</td><td>€ ${compensoTotaleNetto.toFixed(2)}</td></tr>
+      document.getElementById('tabella-soldi-mensili').innerHTML = `
+        <tr><th>Voce</th><th>Importo</th></tr>
+        <tr><td>Base Standard</td><td>€ ${cB.toFixed(2)}</td></tr>
+        <tr><td>Maggiorazioni Notturne</td><td>€ ${cN.toFixed(2)}</td></tr>
+        <tr><td>Straordinari / Festivi</td><td>€ ${(cS+cF+cR).toFixed(2)}</td></tr>
+        <tr style="border-top:2px solid var(--accent); color:var(--accent);"><td>NETTO STIMATO</td><td>€ ${tot.toFixed(2)}</td></tr>
       `;
-      document.getElementById('tabella-soldi-mensili').innerHTML = htmlSoldi;
+
+      // Aggiorna Grafico Chart.js
+      const ctx = document.getElementById('myChart');
+      if (myChart) myChart.destroy();
+      
+      const textColor = getComputedStyle(document.documentElement).getPropertyValue('--text-main');
+      
+      myChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Ore Standard', 'Ore Notturne', 'Straordinari/Festivi'],
+          datasets: [{
+            data: [oN.toFixed(1), tN.toFixed(1), (sM+tF+tR).toFixed(1)],
+            backgroundColor: ['#007aff', '#5856d6', '#ff9500'],
+            borderWidth: 0,
+            hoverOffset: 5
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom', labels: { color: textColor, font: { family: '-apple-system', size: 12 } } }
+          },
+          cutout: '65%'
+        }
+      });
     }
 
-    // --- AGGIORNAMENTO LISTA COMPLETA TURNI ---
-    function renderListaTurni() {
-      let html = '';
-      let turniOrdinati = [...turni].sort((a,b) => new Date(b.data) - new Date(a.data));
-      
-      turniOrdinati.forEach(t => {
-        let badgeHTML = '';
-        if(t.badge === 'festivo') badgeHTML = `<span class="badge badge-festivo">Festivo</span>`;
-        if(t.badge === 'riposo_mancato') badgeHTML = `<span class="badge badge-riposo">Riposo Mancato</span>`;
-        
-        let dataSplittata = t.data.split('-');
-        let dataIta = `${dataSplittata[2]}/${dataSplittata[1]}/${dataSplittata[0]}`;
-
-        html += `
-          <div class="turno-item">
-            <div class="turno-info">
-              <strong>${dataIta}</strong> ${badgeHTML}<br>
-              <span>${t.strInizio} - ${t.strFine} | <strong>${t.oreTotali.toFixed(2)}h</strong></span>
-            </div>
-            <button class="danger btn-sm" onclick="eliminaTurno(${t.id})">Elimina</button>
-          </div>
-        `;
+    function richiediCancellazione() {
+      showConfirm("Inizializza App", "Sei sicuro di voler cancellare tutti i turni salvati? Non potrai recuperarli.", () => {
+        turni = []; localStorage.removeItem('mieiTurni_v6');
+        aggiornaTutto();
+        showToast("Dati cancellati", "🧹");
       });
-      document.getElementById('lista-turni-completa').innerHTML = html || "<p style='color: var(--text-muted); font-size: 13px;'>Nessun turno salvato.</p>";
     }
 
     function aggiornaTutto() {
       renderCalendar();
-      renderRiepilogoMensile();
-      renderListaTurni();
+      if(document.getElementById('view-riepilogo').classList.contains('active')) renderRiepilogoMensile();
     }
-
-    function cancellaDati() {
-      if(confirm("Sei sicuro di voler cancellare TUTTI i dati salvati? L'azione è irreversibile.")) {
-        turni = [];
-        localStorage.removeItem('mieiTurni_v5');
-        aggiornaTutto();
-      }
-    }
-
+    
+    // Inizializza
     aggiornaTutto();
   </script>
 </body>
