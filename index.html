@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Il Mio Orario V4</title>
+  <title>Il Mio Orario V5</title>
   <style>
     :root {
       --bg-color: #f2f2f7;
@@ -18,6 +18,7 @@
       --badge-festivo: #ff9500;
       --badge-riposo: #ff2d55;
       --shadow: rgba(0,0,0,0.08);
+      --nav-bg: rgba(255, 255, 255, 0.9);
     }
     
     [data-theme="dark"] {
@@ -30,168 +31,218 @@
       --border: #38383a;
       --input-bg: #2c2c2e;
       --shadow: rgba(0,0,0,0.5);
+      --nav-bg: rgba(28, 28, 30, 0.9);
     }
 
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg-color); color: var(--text-main); margin: 0; padding: 15px; transition: background 0.3s, color 0.3s; padding-bottom: 40px;}
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg-color); color: var(--text-main); margin: 0; padding: 15px; padding-bottom: 90px; transition: background 0.3s, color 0.3s; }
     
-    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 0 5px; }
-    .header h1 { font-size: 28px; margin: 0; font-weight: 700; letter-spacing: -0.5px; }
-    .theme-toggle { background: var(--card-bg); border: 1px solid var(--border); color: var(--text-main); padding: 8px 12px; border-radius: 20px; font-size: 14px; cursor: pointer; box-shadow: 0 2px 5px var(--shadow); transition: all 0.2s;}
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding: 0 5px; }
+    .header h1 { font-size: 24px; margin: 0; font-weight: 700; letter-spacing: -0.5px; }
+    .theme-toggle { background: var(--card-bg); border: 1px solid var(--border); color: var(--text-main); padding: 6px 12px; border-radius: 20px; font-size: 13px; cursor: pointer; box-shadow: 0 2px 5px var(--shadow); }
 
-    .card { background: var(--card-bg); padding: 20px; border-radius: 20px; box-shadow: 0 4px 15px var(--shadow); margin-bottom: 20px; transition: background 0.3s, box-shadow 0.3s; }
-    .card h2 { font-size: 18px; margin-top: 0; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid var(--border); font-weight: 600; }
+    /* GESTIONE SEZIONI / PAGINE */
+    .view-section { display: none; }
+    .view-section.active { display: block; }
+
+    /* CARDS */
+    .card { background: var(--card-bg); padding: 18px; border-radius: 18px; box-shadow: 0 4px 15px var(--shadow); margin-bottom: 20px; transition: background 0.3s; }
+    .card h2 { font-size: 17px; margin-top: 0; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border); font-weight: 600; }
     
-    label { display: block; font-size: 13px; font-weight: 600; margin-top: 12px; margin-bottom: 6px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;}
-    input, select { width: 100%; padding: 14px; margin-bottom: 5px; border: 1px solid var(--border); border-radius: 12px; box-sizing: border-box; font-size: 16px; background: var(--input-bg); color: var(--text-main); transition: all 0.3s; -webkit-appearance: none; }
+    /* FORM ELEMENTS */
+    label { display: block; font-size: 12px; font-weight: 600; margin-top: 10px; margin-bottom: 5px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;}
+    input, select { width: 100%; padding: 12px; margin-bottom: 5px; border: 1px solid var(--border); border-radius: 12px; box-sizing: border-box; font-size: 15px; background: var(--input-bg); color: var(--text-main); -webkit-appearance: none; }
     input:focus, select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.2); }
     
-    button { width: 100%; padding: 16px; background: var(--accent); color: white; border: none; border-radius: 14px; font-weight: 600; font-size: 16px; cursor: pointer; margin-top: 15px; transition: transform 0.1s, background 0.2s; box-shadow: 0 4px 10px rgba(0, 122, 255, 0.3); }
-    button:active { transform: scale(0.97); background: var(--accent-hover); }
-    button.danger { background: var(--input-bg); color: var(--danger); box-shadow: none; border: 1px solid var(--border); margin-top: 10px;}
-    
-    .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .stat-box { background: var(--input-bg); padding: 15px 10px; border-radius: 14px; text-align: center; font-size: 13px; font-weight: 500; color: var(--text-muted); border: 1px solid var(--border); }
-    .stat-box strong { display: block; font-size: 20px; color: var(--text-main); margin-top: 6px; font-weight: 700;}
-    .stat-box .highlight { color: var(--accent); font-size: 22px; }
+    /* PULSANTI */
+    button { width: 100%; padding: 14px; background: var(--accent); color: white; border: none; border-radius: 12px; font-weight: 600; font-size: 15px; cursor: pointer; margin-top: 12px; box-shadow: 0 4px 10px rgba(0, 122, 255, 0.3); }
+    button:active { transform: scale(0.98); background: var(--accent-hover); }
+    button.danger { background: var(--input-bg); color: var(--danger); box-shadow: none; border: 1px solid var(--border); }
+    button.btn-sm { width: auto; padding: 6px 10px; font-size: 12px; margin-top: 0; box-shadow: none; }
 
-    .turno-item { background: var(--input-bg); padding: 15px; border-radius: 12px; margin-bottom: 10px; font-size: 14px; border-left: 5px solid var(--accent); border-top: 1px solid var(--border); border-right: 1px solid var(--border); border-bottom: 1px solid var(--border);}
-    .turno-header { display: flex; justify-content: space-between; font-weight: 700; margin-bottom: 8px; font-size: 15px;}
-    .turno-details { color: var(--text-muted); font-size: 13px; line-height: 1.4;}
-    .badge { color: white; padding: 3px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; margin-left: 6px; vertical-align: middle;}
+    /* TABELLA MENSILE */
+    .table-custom { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
+    .table-custom th, .table-custom td { padding: 10px 8px; text-align: left; border-bottom: 1px solid var(--border); }
+    .table-custom th { color: var(--text-muted); font-size: 12px; text-transform: uppercase; }
+    .table-custom td:last-child, .table-custom th:last-child { text-align: right; font-weight: 600; }
+
+    /* LISTA TURNI */
+    .turno-item { background: var(--input-bg); padding: 12px; border-radius: 10px; margin-bottom: 8px; font-size: 13px; border-left: 4px solid var(--accent); border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;}
+    .turno-info { flex-grow: 1; }
+    .badge { color: white; padding: 2px 6px; border-radius: 8px; font-size: 10px; font-weight: 600; margin-left: 4px; }
     .badge-festivo { background: var(--badge-festivo); }
     .badge-riposo { background: var(--badge-riposo); }
 
-    .calendar-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-    .calendar-controls button { width: auto; margin: 0; padding: 8px 15px; font-size: 14px; box-shadow: none; border-radius: 8px; }
-    .calendar-controls h3 { margin: 0; font-size: 16px; font-weight: 600; }
-    .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center; }
-    .day-name { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 5px;}
-    .day-cell { aspect-ratio: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; background: var(--input-bg); border-radius: 8px; font-size: 14px; font-weight: 500; position: relative; border: 1px solid var(--border);}
-    .day-cell.has-work { background: rgba(0, 122, 255, 0.1); border-color: var(--accent); color: var(--accent); font-weight: 700;}
+    /* CALENDARIO COMPATTO */
+    .calendar-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .calendar-controls button { width: auto; margin: 0; padding: 6px 12px; font-size: 13px; box-shadow: none; border-radius: 8px; }
+    .calendar-controls h3 { margin: 0; font-size: 15px; font-weight: 600; }
+    .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; }
+    .day-name { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px;}
+    .day-cell { min-height: 48px; display: flex; flex-direction: column; justify-content: flex-start; align-items: center; background: var(--input-bg); border-radius: 8px; font-size: 12px; font-weight: 600; padding-top: 4px; border: 1px solid var(--border); }
+    .day-cell.has-work { background: rgba(0, 122, 255, 0.12); border-color: var(--accent); color: var(--accent); }
     .day-cell.empty { background: transparent; border: none; }
-    .work-dot { width: 6px; height: 6px; background: var(--accent); border-radius: 50%; margin-top: 2px; }
+    .day-hours { font-size: 9px; font-weight: 700; background: var(--accent); color: white; border-radius: 4px; padding: 1px 3px; margin-top: 3px; }
+
+    /* BOTTOM NAVIGATION BAR (GUI IN BASSO) */
+    .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--nav-bg); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border-top: 1px solid var(--border); display: grid; grid-template-columns: repeat(3, 1fr); padding: 8px 0 env(safe-area-inset-bottom, 8px) 0; z-index: 1000; box-shadow: 0 -4px 15px rgba(0,0,0,0.05); }
+    .nav-item { background: transparent; border: none; box-shadow: none; margin: 0; padding: 6px 0; color: var(--text-muted); font-size: 11px; font-weight: 500; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; }
+    .nav-item span { font-size: 18px; }
+    .nav-item.active { color: var(--accent); font-weight: 700; }
   </style>
 </head>
 <body>
 
   <div class="header">
-    <h1>I Miei Orari</h1>
+    <h1 id="app-title">Calendario</h1>
     <button class="theme-toggle" onclick="toggleTheme()" id="btn-theme">🌙 Scura</button>
   </div>
 
-  <!-- CALENDARIO MENSILE -->
-  <div class="card">
-    <h2>Calendario Mensile</h2>
-    <div class="calendar-controls">
-      <button onclick="cambiaMese(-1)">◀</button>
-      <h3 id="mese-corrente-label">Mese Anno</h3>
-      <button onclick="cambiaMese(1)">▶</button>
-    </div>
-    <div class="calendar-grid" id="calendar-header">
-      <div class="day-name">Lun</div><div class="day-name">Mar</div><div class="day-name">Mer</div>
-      <div class="day-name">Gio</div><div class="day-name">Ven</div><div class="day-name">Sab</div><div class="day-name">Dom</div>
-    </div>
-    <div class="calendar-grid" id="calendar-days"></div>
-  </div>
-
-  <!-- DASHBOARD SETTIMANALE -->
-  <div class="card">
-    <h2>Riepilogo Settimana Corrente</h2>
-    <div class="dashboard">
-      <div class="stat-box">Guadagno Stimato<br><strong class="highlight" id="tot-soldi">€ 0.00</strong></div>
-      <div class="stat-box">Ore Lavorate<br><strong id="tot-settimana">0.00h</strong></div>
-      <div class="stat-box">Straordinari<br><strong id="tot-straordinari">0.00h</strong></div>
-      <div class="stat-box">Ore Notturne<br><strong id="tot-notturne">0.00h</strong></div>
-    </div>
-  </div>
-
-  <!-- INSERIMENTO TURNO -->
-  <div class="card">
-    <h2>Registra Turno</h2>
-    <label>Data Inizio Turno</label>
-    <input type="date" id="data-turno">
-    
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-      <div>
-        <label>Ora Inizio</label>
-        <input type="time" id="ora-inizio" required>
+  <!-- SEZIONE 1: CALENDARIO -->
+  <div id="view-calendario" class="view-section active">
+    <div class="card">
+      <div class="calendar-controls">
+        <button onclick="cambiaMese(-1)">◀</button>
+        <h3 id="mese-corrente-label">Mese Anno</h3>
+        <button onclick="cambiaMese(1)">▶</button>
       </div>
-      <div>
-        <label>Ora Fine</label>
-        <input type="time" id="ora-fine" required>
+      <div class="calendar-grid" id="calendar-header">
+        <div class="day-name">Lun</div><div class="day-name">Mar</div><div class="day-name">Mer</div>
+        <div class="day-name">Gio</div><div class="day-name">Ven</div><div class="day-name">Sab</div><div class="day-name">Dom</div>
       </div>
-    </div>
-
-    <label>Pausa (minuti non retribuiti)</label>
-    <input type="number" id="pausa" value="0">
-
-    <label>Contesto Particolare</label>
-    <select id="tipo-giornata">
-      <option value="normale">Giorno Lavorativo Normale</option>
-      <option value="festivo">Giorno Festivo</option>
-      <option value="riposo_mancato">Riposo Non Goduto (7° Giorno)</option>
-    </select>
-
-    <button onclick="salvaTurno()">Salva Turno</button>
-  </div>
-
-  <!-- LISTA TURNI RECENTI -->
-  <div class="card">
-    <h2>Ultimi Inserimenti (Settimana)</h2>
-    <div id="lista-turni"></div>
-  </div>
-
-  <!-- IMPOSTAZIONI CONTRATTO E RETRIBUZIONE -->
-  <div class="card">
-    <h2>Impostazioni & Tariffe CCNL</h2>
-    
-    <label>Paga Base Oraria (€)</label>
-    <input type="number" id="paga-base" step="0.01" value="6.23" onchange="salvaImpostazioni()">
-
-    <label>Monte ore settimanale</label>
-    <select id="monte-ore" onchange="salvaImpostazioni()">
-      <option value="40" selected>40 ore</option>
-      <option value="24">24 ore</option>
-      <option value="20">20 ore</option>
-    </select>
-
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-      <div>
-        <label>Inizio Notte</label>
-        <input type="time" id="inizio-notte" value="22:00" onchange="salvaImpostazioni()">
-      </div>
-      <div>
-        <label>Fine Notte</label>
-        <input type="time" id="fine-notte" value="06:00" onchange="salvaImpostazioni()">
-      </div>
-    </div>
-
-    <h3 style="font-size: 15px; margin-top: 20px; border-bottom: 1px solid var(--border); padding-bottom: 5px;">Maggiorazioni (%)</h3>
-    
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-      <div>
-        <label>Straordinario (%)</label>
-        <input type="number" id="perc-straordinario" value="25" step="1" onchange="salvaImpostazioni()">
-      </div>
-      <div>
-        <label>Notturno (%)</label>
-        <input type="number" id="perc-notturno" value="50" step="1" onchange="salvaImpostazioni()">
-      </div>
-      <div>
-        <label>Festivo (%)</label>
-        <input type="number" id="perc-festivo" value="50" step="1" onchange="salvaImpostazioni()">
-      </div>
-      <div>
-        <label>Riposo Mancato (%)</label>
-        <input type="number" id="perc-riposo" value="75" step="1" onchange="salvaImpostazioni()">
-      </div>
+      <div class="calendar-grid" id="calendar-days"></div>
     </div>
     
-    <button class="danger" onclick="cancellaDati()">Cancella Tutti i Dati dell'App</button>
+    <div class="card">
+      <h2>Dettaglio Mese Selezionato</h2>
+      <div id="info-giorno-selezionato" style="font-size: 13px; color: var(--text-muted);">
+        Seleziona un giorno dal calendario per vedere i dettagli dei turni.
+      </div>
+    </div>
   </div>
+
+  <!-- SEZIONE 2: INSERISCI E GESTISCI TURNI -->
+  <div id="view-inserisci" class="view-section">
+    <div class="card">
+      <h2>Registra Turno</h2>
+      <label>Data Inizio Turno</label>
+      <input type="date" id="data-turno">
+      
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <div>
+          <label>Ora Inizio</label>
+          <input type="time" id="ora-inizio" required>
+        </div>
+        <div>
+          <label>Ora Fine</label>
+          <input type="time" id="ora-fine" required>
+        </div>
+      </div>
+
+      <label>Pausa (minuti non retribuiti)</label>
+      <input type="number" id="pausa" value="0">
+
+      <label>Contesto Particolare</label>
+      <select id="tipo-giornata">
+        <option value="normale">Giorno Lavorativo Normale</option>
+        <option value="festivo">Giorno Festivo</option>
+        <option value="riposo_mancato">Riposo Non Goduto (7° Giorno)</option>
+      </select>
+
+      <button onclick="salvaTurno()">Salva Turno</button>
+    </div>
+
+    <div class="card">
+      <h2>Storico Turni Registrati</h2>
+      <div id="lista-turni-completa"></div>
+    </div>
+  </div>
+
+  <!-- SEZIONE 3: RIEPILOGO MENSILE E SOLDI -->
+  <div id="view-riepilogo" class="view-section">
+    <div class="card">
+      <div class="calendar-controls" style="margin-bottom: 10px;">
+        <button onclick="cambiaMeseRiepilogo(-1)">◀</button>
+        <h3 id="riepilogo-mese-label">Mese Anno</h3>
+        <button onclick="cambiaMeseRiepilogo(1)">▶</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Tabella Ore Mensili</h2>
+      <table class="table-custom" id="tabella-ore-mensili">
+        <!-- Generato da JS -->
+      </table>
+    </div>
+
+    <div class="card">
+      <h2>Tabella Guadagni Mensili</h2>
+      <table class="table-custom" id="tabella-soldi-mensili">
+        <!-- Generato da JS -->
+      </table>
+    </div>
+
+    <div class="card">
+      <h2>Impostazioni & Tariffe CCNL</h2>
+      <label>Paga Base Oraria (€)</label>
+      <input type="number" id="paga-base" step="0.01" value="6.23" onchange="salvaImpostazioni()">
+
+      <label>Monte ore settimanale (per straordinari)</label>
+      <select id="monte-ore" onchange="salvaImpostazioni()">
+        <option value="40" selected>40 ore</option>
+        <option value="24">24 ore</option>
+        <option value="20">20 ore</option>
+      </select>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <div>
+          <label>Inizio Notte</label>
+          <input type="time" id="inizio-notte" value="22:00" onchange="salvaImpostazioni()">
+        </div>
+        <div>
+          <label>Fine Notte</label>
+          <input type="time" id="fine-notte" value="06:00" onchange="salvaImpostazioni()">
+        </div>
+      </div>
+
+      <h3 style="font-size: 14px; margin-top: 15px; border-bottom: 1px solid var(--border); padding-bottom: 4px;">Maggiorazioni (%)</h3>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <div>
+          <label>Straordinario (%)</label>
+          <input type="number" id="perc-straordinario" value="25" onchange="salvaImpostazioni()">
+        </div>
+        <div>
+          <label>Notturno (%)</label>
+          <input type="number" id="perc-notturno" value="50" onchange="salvaImpostazioni()">
+        </div>
+        <div>
+          <label>Festivo (%)</label>
+          <input type="number" id="perc-festivo" value="50" onchange="salvaImpostazioni()">
+        </div>
+        <div>
+          <label>Riposo Mancato (%)</label>
+          <input type="number" id="perc-riposo" value="75" onchange="salvaImpostazioni()">
+        </div>
+      </div>
+      
+      <button class="danger" style="margin-top: 20px;" onclick="cancellaDati()">Cancella Tutti i Dati</button>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAVIGATION BAR -->
+  <nav class="bottom-nav">
+    <button class="nav-item active" onclick="switchTab('calendario', this)">
+      <span>📅</span>Calendario
+    </button>
+    <button class="nav-item" onclick="switchTab('inserisci', this)">
+      <span>➕</span>Inserisci
+    </button>
+    <button class="nav-item" onclick="switchTab('riepilogo', this)">
+      <span>📊</span>Riepilogo
+    </button>
+  </nav>
 
   <script>
-    let isDark = localStorage.getItem('theme_v4') === 'dark';
+    let isDark = localStorage.getItem('theme_v5') === 'dark';
     const body = document.documentElement;
     const btnTheme = document.getElementById('btn-theme');
 
@@ -204,29 +255,35 @@
         btnTheme.innerText = '🌙 Scura';
       }
     }
-    
     function toggleTheme() {
       isDark = !isDark;
-      localStorage.setItem('theme_v4', isDark ? 'dark' : 'light');
+      localStorage.setItem('theme_v5', isDark ? 'dark' : 'light');
       applyTheme();
     }
     applyTheme();
 
+    // Gestione Navigazione Tab
+    function switchTab(tabName, el) {
+      document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+      
+      document.getElementById('view-' + tabName).classList.add('active');
+      el.classList.add('active');
+
+      const titles = { calendario: 'Calendario', inserisci: 'Registra Turno', riepilogo: 'Riepilogo Mensile' };
+      document.getElementById('app-title').innerText = titles[tabName];
+      
+      aggiornaTutto();
+    }
+
     document.getElementById('data-turno').valueAsDate = new Date();
-    let turni = JSON.parse(localStorage.getItem('mieiTurni_v4')) || [];
+    let turni = JSON.parse(localStorage.getItem('mieiTurni_v5')) || [];
     
-    let impostazioni = JSON.parse(localStorage.getItem('mieImpostazioni_v4')) || { 
-      pagaBase: 6.23,
-      monteOre: 40, 
-      inizioNotte: '22:00', 
-      fineNotte: '06:00',
-      percStraordinario: 25,
-      percNotturno: 50,
-      percFestivo: 50,
-      percRiposo: 75
+    let impostazioni = JSON.parse(localStorage.getItem('mieImpostazioni_v5')) || { 
+      pagaBase: 6.23, monteOre: 40, inizioNotte: '22:00', fineNotte: '06:00',
+      percStraordinario: 25, percNotturno: 50, percFestivo: 50, percRiposo: 75
     };
 
-    // Carica impostazioni nella UI
     document.getElementById('paga-base').value = impostazioni.pagaBase;
     document.getElementById('monte-ore').value = impostazioni.monteOre;
     document.getElementById('inizio-notte').value = impostazioni.inizioNotte;
@@ -246,8 +303,8 @@
       impostazioni.percFestivo = parseFloat(document.getElementById('perc-festivo').value) || 0;
       impostazioni.percRiposo = parseFloat(document.getElementById('perc-riposo').value) || 0;
 
-      localStorage.setItem('mieImpostazioni_v4', JSON.stringify(impostazioni));
-      aggiornaInterfaccia();
+      localStorage.setItem('mieImpostazioni_v5', JSON.stringify(impostazioni));
+      aggiornaTutto();
     }
 
     function isFestivo(dateObj) {
@@ -255,15 +312,6 @@
       const m = dateObj.getMonth() + 1;
       const festiviFissi = ["1-1", "6-1", "25-4", "1-5", "2-6", "15-8", "1-11", "8-12", "25-12", "26-12"];
       return festiviFissi.includes(`${d}-${m}`);
-    }
-
-    function getInizioSettimana(dateObj) {
-      const d = new Date(dateObj);
-      const day = d.getDay();
-      const diff = d.getDate() - day + (day == 0 ? -6 : 1);
-      d.setDate(diff);
-      d.setHours(0,0,0,0);
-      return d;
     }
 
     function timeToMinutes(timeStr) {
@@ -291,19 +339,17 @@
         calcolaESalvaFrammento(dataStr, inizioMin, fineMin, pausa, badgeTypeG1, inizioStr, fineStr);
       } else {
         calcolaESalvaFrammento(dataStr, inizioMin, 1440, pausa, badgeTypeG1, inizioStr, "24:00"); 
-        
         let dataFineObj = new Date(dataInizioObj);
         dataFineObj.setDate(dataFineObj.getDate() + 1);
         let dataFineStr = dataFineObj.toISOString().split('T')[0];
-        
         let badgeTypeG2 = isFestivo(dataFineObj) ? 'festivo' : 'normale';
         if(tipoGiornata === 'riposo_mancato') badgeTypeG2 = 'riposo_mancato';
-
         calcolaESalvaFrammento(dataFineStr, 0, fineMin, 0, badgeTypeG2, "00:00", fineStr);
       }
 
-      localStorage.setItem('mieiTurni_v4', JSON.stringify(turni));
-      aggiornaInterfaccia();
+      localStorage.setItem('mieiTurni_v5', JSON.stringify(turni));
+      aggiornaTutto();
+      alert("Turno salvato con successo!");
       
       document.getElementById('ora-inizio').value = '';
       document.getElementById('ora-fine').value = '';
@@ -312,12 +358,10 @@
 
     function calcolaESalvaFrammento(data, startMin, endMin, pausa, badgeType, strInizio, strFine) {
       if (startMin >= endMin) return;
-
       const notteInizio = timeToMinutes(impostazioni.inizioNotte);
       const notteFine = timeToMinutes(impostazioni.fineNotte);
 
       let diurne = 0; let notturne = 0;
-
       for (let m = startMin; m < endMin; m++) {
         let isMinNotturno = false;
         if (notteInizio > notteFine) {
@@ -325,13 +369,11 @@
         } else {
              if (m >= notteInizio && m < notteFine) isMinNotturno = true;
         }
-        if (isMinNotturno) notturne++;
-        else diurne++;
+        if (isMinNotturno) notturne++; else diurne++;
       }
 
       let p = pausa;
-      if (diurne >= p) { diurne -= p; } 
-      else { p -= diurne; diurne = 0; notturne -= p; }
+      if (diurne >= p) { diurne -= p; } else { p -= diurne; diurne = 0; notturne -= p; }
       if(notturne < 0) notturne = 0;
 
       turni.push({
@@ -346,8 +388,16 @@
       });
     }
 
+    function eliminaTurno(id) {
+      if(confirm("Vuoi eliminare questo turno?")) {
+        turni = turni.filter(t => t.id !== id);
+        localStorage.setItem('mieiTurni_v5', JSON.stringify(turni));
+        aggiornaTutto();
+      }
+    }
+
+    // --- CALENDARIO INTERATTIVO ---
     let currentMonthDate = new Date();
-    
     function cambiaMese(step) {
       currentMonthDate.setMonth(currentMonthDate.getMonth() + step);
       renderCalendar();
@@ -370,7 +420,12 @@
       const calendarContainer = document.getElementById('calendar-days');
       calendarContainer.innerHTML = '';
 
-      const giorniLavorati = new Set(turni.map(t => t.data));
+      // Mappa ore per giorno nel mese
+      const orePerGiorno = {};
+      turni.forEach(t => {
+        if(!orePerGiorno[t.data]) orePerGiorno[t.data] = 0;
+        orePerGiorno[t.data] += t.oreTotali;
+      });
 
       for (let i = 0; i < startDayOfWeek; i++) {
         calendarContainer.innerHTML += `<div class="day-cell empty"></div>`;
@@ -378,115 +433,150 @@
 
       for (let day = 1; day <= daysInMonth; day++) {
         const dataStr = `${year}-${String(month+1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-        const hasWork = giorniLavorati.has(dataStr);
-        
+        const hasWork = orePerGiorno[dataStr] !== undefined;
         let cellClass = hasWork ? "day-cell has-work" : "day-cell";
-        let dotHTML = hasWork ? `<div class="work-dot"></div>` : ``;
+        let hoursHTML = hasWork ? `<div class="day-hours">${orePerGiorno[dataStr].toFixed(1)}h</div>` : ``;
         
         calendarContainer.innerHTML += `
-          <div class="${cellClass}">
+          <div class="${cellClass}" onclick="mostraDettagliGiorno('${dataStr}')">
             ${day}
-            ${dotHTML}
+            ${hoursHTML}
           </div>
         `;
       }
     }
 
-    function aggiornaInterfaccia() {
-      renderCalendar();
-
-      let dataRiferimento = new Date();
-      if(turni.length > 0) {
-          let turniOrdinati = [...turni].sort((a,b) => new Date(b.data) - new Date(a.data));
-          dataRiferimento = new Date(turniOrdinati[0].data);
+    function mostraDettagliGiorno(dataStr) {
+      const turniDelGiorno = turni.filter(t => t.data === dataStr);
+      const container = document.getElementById('info-giorno-selezionato');
+      
+      if(turniDelGiorno.length === 0) {
+        container.innerHTML = `Nessun turno registrato il ${dataStr.split('-').reverse().join('/')}.`;
+        return;
       }
-      
-      const inizioSettimana = getInizioSettimana(dataRiferimento);
-      let fineSettimana = new Date(inizioSettimana);
-      fineSettimana.setDate(fineSettimana.getDate() + 6);
 
-      let totOre = 0; let totNotturne = 0;
-      let htmlLista = '';
-      
-      let turniFiltrati = turni.filter(t => {
-        let d = new Date(t.data);
-        return d >= inizioSettimana && d <= fineSettimana;
-      });
-
-      turniFiltrati.sort((a,b) => new Date(a.data) - new Date(b.data));
-
-      // Prima passata per calcolare le ore totali della settimana e capire dove iniziano gli straordinari
-      turniFiltrati.forEach(t => { totOre += t.oreTotali; totNotturne += t.oreNotturne; });
-
-      // Calcolo economico dettagliato
-      let monteOre = impostazioni.monteOre;
-      let oreStraordinarioRimanenti = totOre > monteOre ? (totOre - monteOre) : 0;
-      
-      let guadagnoTotaleSettimana = 0;
-
-      turniFiltrati.forEach(t => {
-        let pagaBaseH = impostazioni.pagaBase;
-        let oreDelTurno = t.oreTotali;
-        
-        // Tariffa base per questo turno
-        let compensoTurno = oreDelTurno * pagaBaseH;
-
-        // Maggiorazione Notturna (si applica alle ore notturne del turno)
-        if (t.oreNotturne > 0) {
-          compensoTurno += t.oreNotturne * pagaBaseH * (impostazioni.percNotturno / 100);
-        }
-
-        // Maggiorazione Festiva o Riposo Mancato (si applica a tutte le ore del turno se marcato)
-        if (t.badge === 'festivo') {
-          compensoTurno += oreDelTurno * pagaBaseH * (impostazioni.percFestivo / 100);
-        } else if (t.badge === 'riposo_mancato') {
-          compensoTurno += oreDelTurno * pagaBaseH * (impostazioni.percRiposo / 100);
-        }
-
-        guadagnoTotaleSettimana += compensoTurno;
-
+      let html = `<strong>Data: ${dataStr.split('-').reverse().join('/')}</strong><br><br>`;
+      turniDelGiorno.forEach(t => {
         let badgeHTML = '';
         if(t.badge === 'festivo') badgeHTML = `<span class="badge badge-festivo">Festivo</span>`;
         if(t.badge === 'riposo_mancato') badgeHTML = `<span class="badge badge-riposo">Mancato Riposo</span>`;
+        html += `• ${t.strInizio} - ${t.strFine} | <strong>${t.oreTotali.toFixed(2)}h</strong> ${badgeHTML}<br>`;
+      });
+      container.innerHTML = html;
+    }
 
+    // --- RIEPILOGO MENSILE E TABELLE ---
+    let currentRiepilogoDate = new Date();
+    function cambiaMeseRiepilogo(step) {
+      currentRiepilogoDate.setMonth(currentRiepilogoDate.getMonth() + step);
+      renderRiepilogoMensile();
+    }
+
+    function renderRiepilogoMensile() {
+      const year = currentRiepilogoDate.getFullYear();
+      const month = currentRiepilogoDate.getMonth();
+      const monthNames = ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"];
+      document.getElementById('riepilogo-mese-label').innerText = `${monthNames[month]} ${year}`;
+
+      // Filtra i turni di questo mese
+      const turniMese = turni.filter(t => {
+        let d = new Date(t.data);
+        return d.getFullYear() === year && d.getMonth() === month;
+      });
+
+      let totOre = 0, totDiurne = 0, totNotturne = 0, totFestive = 0, totRiposo = 0;
+
+      turniMese.forEach(t => {
+        totOre += t.oreTotali;
+        totDiurne += t.oreDiurne;
+        totNotturne += t.oreNotturne;
+        if(t.badge === 'festivo') totFestive += t.oreTotali;
+        if(t.badge === 'riposo_mancato') totRiposo += t.oreTotali;
+      });
+
+      // Calcolo straordinari (basato sul monte ore settimanale spalmato/verificato sui turni)
+      // Per semplicità mensile precisa, calcoliamo le settimane dell'anno o stimiamo basandoci sulle ore standard vs monte ore
+      // Stima straordinari mensili (ore totali oltre la media settimanale rapportata al mese)
+      let settimaneNelMese = turniMese.length > 0 ? 4.33 : 0;
+      let monteOreMensile = impostazioni.monteOre * settimaneNelMese;
+      let straordinariMensili = totOre > monteOreMensile ? (totOre - monteOreMensile) : 0;
+      let oreNormaliMensili = totOre > straordinariMensili ? (totOre - straordinariMensili) : totOre;
+
+      // Tabella 1: Ore Mensili
+      let htmlOre = `
+        <tr><th>Tipologia Ore</th><th>Totale Mese</th></tr>
+        <tr><td>Ore Totali Lavorate</td><td>${totOre.toFixed(2)}h</td></tr>
+        <tr><td>Ore Diurne</td><td>${totDiurne.toFixed(2)}h</td></tr>
+        <tr><td>Ore Notturne</td><td>${totNotturne.toFixed(2)}h</td></tr>
+        <tr><td>Ore Straordinarie (Extra)</td><td>${straordinariMensili.toFixed(2)}h</td></tr>
+        <tr><td>Ore in Giorni Festivi</td><td>${totFestive.toFixed(2)}h</td></tr>
+        <tr><td>Ore Riposo Non Goduto</td><td>${totRiposo.toFixed(2)}h</td></tr>
+      `;
+      document.getElementById('tabella-ore-mensili').innerHTML = htmlOre;
+
+      // Tabella 2: Guadagni Mensili
+      let paga = impostazioni.pagaBase;
+      let compensoBase = oreNormaliMensili * paga;
+      let compensoStraordinari = straordinariMensili * paga * (impostazioni.percStraordinario / 100);
+      let compensoNotturne = totNotturne * paga * (impostazioni.percNotturno / 100);
+      let compensoFestivi = totFestive * paga * (impostazioni.percFestivo / 100);
+      let compensoRiposo = totRiposo * paga * (impostazioni.percRiposo / 100);
+
+      let compensoTotaleNetto = compensoBase + compensoStraordinari + compensoNotturne + compensoFestivi + compensoRiposo;
+
+      let htmlSoldi = `
+        <tr><th>Voce Compenso</th><th>Importo (€)</th></tr>
+        <tr><td>Ore Normali / Standard</td><td>€ ${compensoBase.toFixed(2)}</td></tr>
+        <tr><td>Maggiorazione Straordinari</td><td>€ ${compensoStraordinari.toFixed(2)}</td></tr>
+        <tr><td>Maggiorazione Notturna</td><td>€ ${compensoNotturne.toFixed(2)}</td></tr>
+        <tr><td>Compensi Festivi</td><td>€ ${compensoFestivi.toFixed(2)}</td></tr>
+        <tr><td>Compensi Riposo Mancato</td><td>€ ${compensoRiposo.toFixed(2)}</td></tr>
+        <tr style="border-top: 2px solid var(--accent); font-weight: bold;"><td>TOTALE STIMATO MESE</td><td>€ ${compensoTotaleNetto.toFixed(2)}</td></tr>
+      `;
+      document.getElementById('tabella-soldi-mensili').innerHTML = htmlSoldi;
+    }
+
+    // --- AGGIORNAMENTO LISTA COMPLETA TURNI ---
+    function renderListaTurni() {
+      let html = '';
+      let turniOrdinati = [...turni].sort((a,b) => new Date(b.data) - new Date(a.data));
+      
+      turniOrdinati.forEach(t => {
+        let badgeHTML = '';
+        if(t.badge === 'festivo') badgeHTML = `<span class="badge badge-festivo">Festivo</span>`;
+        if(t.badge === 'riposo_mancato') badgeHTML = `<span class="badge badge-riposo">Riposo Mancato</span>`;
+        
         let dataSplittata = t.data.split('-');
-        let dataIta = `${dataSplittata[2]}/${dataSplittata[1]}`;
+        let dataIta = `${dataSplittata[2]}/${dataSplittata[1]}/${dataSplittata[0]}`;
 
-        htmlLista += `
+        html += `
           <div class="turno-item">
-            <div class="turno-header">
-              <span>${dataIta} ${badgeHTML}</span>
-              <span>${t.strInizio} - ${t.strFine}</span>
+            <div class="turno-info">
+              <strong>${dataIta}</strong> ${badgeHTML}<br>
+              <span>${t.strInizio} - ${t.strFine} | <strong>${t.oreTotali.toFixed(2)}h</strong></span>
             </div>
-            <div class="turno-details">
-              Tot: <strong>${t.oreTotali.toFixed(2)}h</strong> &nbsp; (Diurne: ${t.oreDiurne.toFixed(2)}h | Notturne: ${t.oreNotturne.toFixed(2)}h)
-            </div>
+            <button class="danger btn-sm" onclick="eliminaTurno(${t.id})">Elimina</button>
           </div>
         `;
       });
+      document.getElementById('lista-turni-completa').innerHTML = html || "<p style='color: var(--text-muted); font-size: 13px;'>Nessun turno salvato.</p>";
+    }
 
-      // Se ci sono straordinari complessivi nella settimana, aggiungiamo la relativa quota di maggiorazione extra
-      if (oreStraordinarioRimanenti > 0) {
-        guadagnoTotaleSettimana += oreStraordinarioRimanenti * impostazioni.pagaBase * (impostazioni.percStraordinario / 100);
-      }
-
-      document.getElementById('tot-settimana').innerText = totOre.toFixed(2) + "h";
-      document.getElementById('tot-notturne').innerText = totNotturne.toFixed(2) + "h";
-      document.getElementById('tot-straordinari').innerText = oreStraordinarioRimanenti.toFixed(2) + "h";
-      document.getElementById('tot-soldi').innerText = "€ " + guadagnoTotaleSettimana.toFixed(2);
-      
-      document.getElementById('lista-turni').innerHTML = htmlLista || "<p style='color: var(--text-muted); font-size: 14px;'>Nessun turno in questa settimana.</p>";
+    function aggiornaTutto() {
+      renderCalendar();
+      renderRiepilogoMensile();
+      renderListaTurni();
     }
 
     function cancellaDati() {
       if(confirm("Sei sicuro di voler cancellare TUTTI i dati salvati? L'azione è irreversibile.")) {
         turni = [];
-        localStorage.removeItem('mieiTurni_v4');
-        aggiornaInterfaccia();
+        localStorage.removeItem('mieiTurni_v5');
+        aggiornaTutto();
       }
     }
 
-    aggiornaInterfaccia();
+    aggiornaTutto();
   </script>
 </body>
 </html>
