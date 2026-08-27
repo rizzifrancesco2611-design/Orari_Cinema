@@ -3,9 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Il Mio Orario V3</title>
+  <title>Il Mio Orario V4</title>
   <style>
-    /* VARIABILI PER TEMA CHIARO E SCURO */
     :root {
       --bg-color: #f2f2f7;
       --card-bg: #ffffff;
@@ -33,35 +32,28 @@
       --shadow: rgba(0,0,0,0.5);
     }
 
-    /* STILI BASE */
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg-color); color: var(--text-main); margin: 0; padding: 15px; transition: background 0.3s, color 0.3s; padding-bottom: 40px;}
     
-    /* HEADER E DARK MODE TOGGLE */
     .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 0 5px; }
     .header h1 { font-size: 28px; margin: 0; font-weight: 700; letter-spacing: -0.5px; }
     .theme-toggle { background: var(--card-bg); border: 1px solid var(--border); color: var(--text-main); padding: 8px 12px; border-radius: 20px; font-size: 14px; cursor: pointer; box-shadow: 0 2px 5px var(--shadow); transition: all 0.2s;}
 
-    /* CARDS */
     .card { background: var(--card-bg); padding: 20px; border-radius: 20px; box-shadow: 0 4px 15px var(--shadow); margin-bottom: 20px; transition: background 0.3s, box-shadow 0.3s; }
     .card h2 { font-size: 18px; margin-top: 0; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid var(--border); font-weight: 600; }
     
-    /* FORM ELEMENTS */
     label { display: block; font-size: 13px; font-weight: 600; margin-top: 12px; margin-bottom: 6px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;}
     input, select { width: 100%; padding: 14px; margin-bottom: 5px; border: 1px solid var(--border); border-radius: 12px; box-sizing: border-box; font-size: 16px; background: var(--input-bg); color: var(--text-main); transition: all 0.3s; -webkit-appearance: none; }
     input:focus, select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.2); }
     
-    /* PULSANTI */
     button { width: 100%; padding: 16px; background: var(--accent); color: white; border: none; border-radius: 14px; font-weight: 600; font-size: 16px; cursor: pointer; margin-top: 15px; transition: transform 0.1s, background 0.2s; box-shadow: 0 4px 10px rgba(0, 122, 255, 0.3); }
     button:active { transform: scale(0.97); background: var(--accent-hover); }
     button.danger { background: var(--input-bg); color: var(--danger); box-shadow: none; border: 1px solid var(--border); margin-top: 10px;}
     
-    /* DASHBOARD WIDGETS */
     .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     .stat-box { background: var(--input-bg); padding: 15px 10px; border-radius: 14px; text-align: center; font-size: 13px; font-weight: 500; color: var(--text-muted); border: 1px solid var(--border); }
-    .stat-box strong { display: block; font-size: 22px; color: var(--text-main); margin-top: 6px; font-weight: 700;}
-    .stat-box .highlight { color: var(--accent); }
+    .stat-box strong { display: block; font-size: 20px; color: var(--text-main); margin-top: 6px; font-weight: 700;}
+    .stat-box .highlight { color: var(--accent); font-size: 22px; }
 
-    /* LISTA TURNI */
     .turno-item { background: var(--input-bg); padding: 15px; border-radius: 12px; margin-bottom: 10px; font-size: 14px; border-left: 5px solid var(--accent); border-top: 1px solid var(--border); border-right: 1px solid var(--border); border-bottom: 1px solid var(--border);}
     .turno-header { display: flex; justify-content: space-between; font-weight: 700; margin-bottom: 8px; font-size: 15px;}
     .turno-details { color: var(--text-muted); font-size: 13px; line-height: 1.4;}
@@ -69,7 +61,6 @@
     .badge-festivo { background: var(--badge-festivo); }
     .badge-riposo { background: var(--badge-riposo); }
 
-    /* CALENDARIO MENSILE */
     .calendar-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
     .calendar-controls button { width: auto; margin: 0; padding: 8px 15px; font-size: 14px; box-shadow: none; border-radius: 8px; }
     .calendar-controls h3 { margin: 0; font-size: 16px; font-weight: 600; }
@@ -100,18 +91,16 @@
       <div class="day-name">Lun</div><div class="day-name">Mar</div><div class="day-name">Mer</div>
       <div class="day-name">Gio</div><div class="day-name">Ven</div><div class="day-name">Sab</div><div class="day-name">Dom</div>
     </div>
-    <div class="calendar-grid" id="calendar-days">
-      <!-- Generato da JS -->
-    </div>
+    <div class="calendar-grid" id="calendar-days"></div>
   </div>
 
   <!-- DASHBOARD SETTIMANALE -->
   <div class="card">
     <h2>Riepilogo Settimana Corrente</h2>
     <div class="dashboard">
-      <div class="stat-box">Ore Lavorate<br><strong class="highlight" id="tot-settimana">0.00h</strong></div>
+      <div class="stat-box">Guadagno Stimato<br><strong class="highlight" id="tot-soldi">€ 0.00</strong></div>
+      <div class="stat-box">Ore Lavorate<br><strong id="tot-settimana">0.00h</strong></div>
       <div class="stat-box">Straordinari<br><strong id="tot-straordinari">0.00h</strong></div>
-      <div class="stat-box">Ore Diurne<br><strong id="tot-diurne">0.00h</strong></div>
       <div class="stat-box">Ore Notturne<br><strong id="tot-notturne">0.00h</strong></div>
     </div>
   </div>
@@ -152,26 +141,57 @@
     <div id="lista-turni"></div>
   </div>
 
-  <!-- IMPOSTAZIONI CONTRATTO -->
+  <!-- IMPOSTAZIONI CONTRATTO E RETRIBUZIONE -->
   <div class="card">
-    <h2>Impostazioni CCNL Cinema</h2>
+    <h2>Impostazioni & Tariffe CCNL</h2>
+    
+    <label>Paga Base Oraria (€)</label>
+    <input type="number" id="paga-base" step="0.01" value="6.23" onchange="salvaImpostazioni()">
+
     <label>Monte ore settimanale</label>
     <select id="monte-ore" onchange="salvaImpostazioni()">
       <option value="40" selected>40 ore</option>
       <option value="24">24 ore</option>
       <option value="20">20 ore</option>
     </select>
-    <label>Inizio Fascia Notturna</label>
-    <input type="time" id="inizio-notte" value="22:00" onchange="salvaImpostazioni()">
-    <label>Fine Fascia Notturna</label>
-    <input type="time" id="fine-notte" value="06:00" onchange="salvaImpostazioni()">
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+      <div>
+        <label>Inizio Notte</label>
+        <input type="time" id="inizio-notte" value="22:00" onchange="salvaImpostazioni()">
+      </div>
+      <div>
+        <label>Fine Notte</label>
+        <input type="time" id="fine-notte" value="06:00" onchange="salvaImpostazioni()">
+      </div>
+    </div>
+
+    <h3 style="font-size: 15px; margin-top: 20px; border-bottom: 1px solid var(--border); padding-bottom: 5px;">Maggiorazioni (%)</h3>
+    
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+      <div>
+        <label>Straordinario (%)</label>
+        <input type="number" id="perc-straordinario" value="25" step="1" onchange="salvaImpostazioni()">
+      </div>
+      <div>
+        <label>Notturno (%)</label>
+        <input type="number" id="perc-notturno" value="50" step="1" onchange="salvaImpostazioni()">
+      </div>
+      <div>
+        <label>Festivo (%)</label>
+        <input type="number" id="perc-festivo" value="50" step="1" onchange="salvaImpostazioni()">
+      </div>
+      <div>
+        <label>Riposo Mancato (%)</label>
+        <input type="number" id="perc-riposo" value="75" step="1" onchange="salvaImpostazioni()">
+      </div>
+    </div>
     
     <button class="danger" onclick="cancellaDati()">Cancella Tutti i Dati dell'App</button>
   </div>
 
   <script>
-    // --- GESTIONE TEMA DARK/LIGHT ---
-    let isDark = localStorage.getItem('theme_v3') === 'dark';
+    let isDark = localStorage.getItem('theme_v4') === 'dark';
     const body = document.documentElement;
     const btnTheme = document.getElementById('btn-theme');
 
@@ -187,29 +207,49 @@
     
     function toggleTheme() {
       isDark = !isDark;
-      localStorage.setItem('theme_v3', isDark ? 'dark' : 'light');
+      localStorage.setItem('theme_v4', isDark ? 'dark' : 'light');
       applyTheme();
     }
     applyTheme();
 
-    // --- INIZIALIZZAZIONE DATI ---
     document.getElementById('data-turno').valueAsDate = new Date();
-    let turni = JSON.parse(localStorage.getItem('mieiTurni_v3')) || [];
-    let impostazioni = JSON.parse(localStorage.getItem('mieImpostazioni_v3')) || { monteOre: 40, inizioNotte: '22:00', fineNotte: '06:00' };
+    let turni = JSON.parse(localStorage.getItem('mieiTurni_v4')) || [];
+    
+    let impostazioni = JSON.parse(localStorage.getItem('mieImpostazioni_v4')) || { 
+      pagaBase: 6.23,
+      monteOre: 40, 
+      inizioNotte: '22:00', 
+      fineNotte: '06:00',
+      percStraordinario: 25,
+      percNotturno: 50,
+      percFestivo: 50,
+      percRiposo: 75
+    };
 
+    // Carica impostazioni nella UI
+    document.getElementById('paga-base').value = impostazioni.pagaBase;
     document.getElementById('monte-ore').value = impostazioni.monteOre;
     document.getElementById('inizio-notte').value = impostazioni.inizioNotte;
     document.getElementById('fine-notte').value = impostazioni.fineNotte;
+    document.getElementById('perc-straordinario').value = impostazioni.percStraordinario;
+    document.getElementById('perc-notturno').value = impostazioni.percNotturno;
+    document.getElementById('perc-festivo').value = impostazioni.percFestivo;
+    document.getElementById('perc-riposo').value = impostazioni.percRiposo;
 
     function salvaImpostazioni() {
+      impostazioni.pagaBase = parseFloat(document.getElementById('paga-base').value) || 0;
       impostazioni.monteOre = parseFloat(document.getElementById('monte-ore').value);
       impostazioni.inizioNotte = document.getElementById('inizio-notte').value;
       impostazioni.fineNotte = document.getElementById('fine-notte').value;
-      localStorage.setItem('mieImpostazioni_v3', JSON.stringify(impostazioni));
+      impostazioni.percStraordinario = parseFloat(document.getElementById('perc-straordinario').value) || 0;
+      impostazioni.percNotturno = parseFloat(document.getElementById('perc-notturno').value) || 0;
+      impostazioni.percFestivo = parseFloat(document.getElementById('perc-festivo').value) || 0;
+      impostazioni.percRiposo = parseFloat(document.getElementById('perc-riposo').value) || 0;
+
+      localStorage.setItem('mieImpostazioni_v4', JSON.stringify(impostazioni));
       aggiornaInterfaccia();
     }
 
-    // --- LOGICA E CALCOLI ORE ---
     function isFestivo(dateObj) {
       const d = dateObj.getDate();
       const m = dateObj.getMonth() + 1;
@@ -257,15 +297,14 @@
         let dataFineStr = dataFineObj.toISOString().split('T')[0];
         
         let badgeTypeG2 = isFestivo(dataFineObj) ? 'festivo' : 'normale';
-        if(tipoGiornata === 'riposo_mancato') badgeTypeG2 = 'riposo_mancato'; // Se la prima parte era riposo mancato, forziamo
+        if(tipoGiornata === 'riposo_mancato') badgeTypeG2 = 'riposo_mancato';
 
         calcolaESalvaFrammento(dataFineStr, 0, fineMin, 0, badgeTypeG2, "00:00", fineStr);
       }
 
-      localStorage.setItem('mieiTurni_v3', JSON.stringify(turni));
+      localStorage.setItem('mieiTurni_v4', JSON.stringify(turni));
       aggiornaInterfaccia();
       
-      // Resetta form
       document.getElementById('ora-inizio').value = '';
       document.getElementById('ora-fine').value = '';
       document.getElementById('pausa').value = '0';
@@ -300,14 +339,13 @@
         data: data,
         strInizio: strInizio,
         strFine: strFine,
-        oreTotali: +((diurne + notturne) / 60).toFixed(2),
-        oreDiurne: +(diurne / 60).toFixed(2),
-        oreNotturne: +(notturne / 60).toFixed(2),
+        oreTotali: +((diurne + notturne) / 60).toFixed(4),
+        oreDiurne: +(diurne / 60).toFixed(4),
+        oreNotturne: +(notturne / 60).toFixed(4),
         badge: badgeType
       });
     }
 
-    // --- CALENDARIO MENSILE ---
     let currentMonthDate = new Date();
     
     function cambiaMese(step) {
@@ -326,22 +364,18 @@
       const lastDay = new Date(year, month + 1, 0);
       const daysInMonth = lastDay.getDate();
       
-      // Calcola i giorni vuoti all'inizio (adatta Domenica(0) a Lunedì(1))
       let startDayOfWeek = firstDay.getDay();
       startDayOfWeek = startDayOfWeek === 0 ? 6 : startDayOfWeek - 1; 
 
       const calendarContainer = document.getElementById('calendar-days');
       calendarContainer.innerHTML = '';
 
-      // Mappa i giorni in cui c'è almeno un turno
       const giorniLavorati = new Set(turni.map(t => t.data));
 
-      // Celle vuote prima del 1° del mese
       for (let i = 0; i < startDayOfWeek; i++) {
         calendarContainer.innerHTML += `<div class="day-cell empty"></div>`;
       }
 
-      // Giorni del mese
       for (let day = 1; day <= daysInMonth; day++) {
         const dataStr = `${year}-${String(month+1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
         const hasWork = giorniLavorati.has(dataStr);
@@ -358,7 +392,6 @@
       }
     }
 
-    // --- AGGIORNAMENTO UI SETTIMANALE ---
     function aggiornaInterfaccia() {
       renderCalendar();
 
@@ -372,7 +405,7 @@
       let fineSettimana = new Date(inizioSettimana);
       fineSettimana.setDate(fineSettimana.getDate() + 6);
 
-      let totOre = 0; let totDiurne = 0; let totNotturne = 0;
+      let totOre = 0; let totNotturne = 0;
       let htmlLista = '';
       
       let turniFiltrati = turni.filter(t => {
@@ -382,16 +415,40 @@
 
       turniFiltrati.sort((a,b) => new Date(a.data) - new Date(b.data));
 
+      // Prima passata per calcolare le ore totali della settimana e capire dove iniziano gli straordinari
+      turniFiltrati.forEach(t => { totOre += t.oreTotali; totNotturne += t.oreNotturne; });
+
+      // Calcolo economico dettagliato
+      let monteOre = impostazioni.monteOre;
+      let oreStraordinarioRimanenti = totOre > monteOre ? (totOre - monteOre) : 0;
+      
+      let guadagnoTotaleSettimana = 0;
+
       turniFiltrati.forEach(t => {
-        totOre += t.oreTotali;
-        totDiurne += t.oreDiurne;
-        totNotturne += t.oreNotturne;
+        let pagaBaseH = impostazioni.pagaBase;
+        let oreDelTurno = t.oreTotali;
         
+        // Tariffa base per questo turno
+        let compensoTurno = oreDelTurno * pagaBaseH;
+
+        // Maggiorazione Notturna (si applica alle ore notturne del turno)
+        if (t.oreNotturne > 0) {
+          compensoTurno += t.oreNotturne * pagaBaseH * (impostazioni.percNotturno / 100);
+        }
+
+        // Maggiorazione Festiva o Riposo Mancato (si applica a tutte le ore del turno se marcato)
+        if (t.badge === 'festivo') {
+          compensoTurno += oreDelTurno * pagaBaseH * (impostazioni.percFestivo / 100);
+        } else if (t.badge === 'riposo_mancato') {
+          compensoTurno += oreDelTurno * pagaBaseH * (impostazioni.percRiposo / 100);
+        }
+
+        guadagnoTotaleSettimana += compensoTurno;
+
         let badgeHTML = '';
         if(t.badge === 'festivo') badgeHTML = `<span class="badge badge-festivo">Festivo</span>`;
         if(t.badge === 'riposo_mancato') badgeHTML = `<span class="badge badge-riposo">Mancato Riposo</span>`;
 
-        // Formatta la data per l'italiano (es. 15/08)
         let dataSplittata = t.data.split('-');
         let dataIta = `${dataSplittata[2]}/${dataSplittata[1]}`;
 
@@ -408,24 +465,27 @@
         `;
       });
 
-      let straordinari = totOre > impostazioni.monteOre ? (totOre - impostazioni.monteOre) : 0;
+      // Se ci sono straordinari complessivi nella settimana, aggiungiamo la relativa quota di maggiorazione extra
+      if (oreStraordinarioRimanenti > 0) {
+        guadagnoTotaleSettimana += oreStraordinarioRimanenti * impostazioni.pagaBase * (impostazioni.percStraordinario / 100);
+      }
 
       document.getElementById('tot-settimana').innerText = totOre.toFixed(2) + "h";
-      document.getElementById('tot-diurne').innerText = totDiurne.toFixed(2) + "h";
       document.getElementById('tot-notturne').innerText = totNotturne.toFixed(2) + "h";
-      document.getElementById('tot-straordinari').innerText = straordinari.toFixed(2) + "h";
+      document.getElementById('tot-straordinari').innerText = oreStraordinarioRimanenti.toFixed(2) + "h";
+      document.getElementById('tot-soldi').innerText = "€ " + guadagnoTotaleSettimana.toFixed(2);
+      
       document.getElementById('lista-turni').innerHTML = htmlLista || "<p style='color: var(--text-muted); font-size: 14px;'>Nessun turno in questa settimana.</p>";
     }
 
     function cancellaDati() {
       if(confirm("Sei sicuro di voler cancellare TUTTI i dati salvati? L'azione è irreversibile.")) {
         turni = [];
-        localStorage.removeItem('mieiTurni_v3');
+        localStorage.removeItem('mieiTurni_v4');
         aggiornaInterfaccia();
       }
     }
 
-    // Primo avvio
     aggiornaInterfaccia();
   </script>
 </body>
