@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>I Miei Orari V15 - CCNL Cinema</title>
+  <title>I Miei Orari - CCNL Cinema (Netto Diretto)</title>
   
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" crossorigin="anonymous"></script>
   
@@ -188,7 +188,7 @@
       <label for="tipo-giornata">Tipologia Giornata</label>
       <select id="tipo-giornata">
         <option value="normale">Automatico (Normale / Domenica / Festivo da calendario)</option>
-        <option value="festivo">Forza Festivo Lavorato (55%)</option>
+        <option value="festivo">Forza Festivo Lavorato (+55%)</option>
         <option value="riposo_mancato">Riposo Settimanale Non Goduto (7° Giorno)</option>
       </select>
       
@@ -209,7 +209,7 @@
     </div>
   </div>
 
-  <!-- 3. RIEPILOGO MENSILE E BUSTA PAGA -->
+  <!-- 3. RIEPILOGO MENSILE E STIMA NETTA -->
   <div id="view-riepilogo" class="view-section">
     <div class="card">
       <div class="calendar-controls" style="margin-bottom: 20px;">
@@ -229,14 +229,14 @@
     </div>
 
     <div class="card">
-      <h2>Stima Busta Paga (CCNL Cinema)</h2>
+      <h2>Stima Netto Busta Paga</h2>
       <table class="table-custom" id="tabella-soldi-mensili"></table>
     </div>
 
     <div class="card">
-      <h2>Parametri Contrattuali & Fasce</h2>
-      <label for="paga-base">Paga Base Oraria Minima (€)</label>
-      <input type="number" id="paga-base" step="0.00001" value="7.33335" onchange="salvaImpostazioni()">
+      <h2>Parametri Contrattuali & Orari</h2>
+      <label for="paga-base">Paga Oraria Base Netta (€)</label>
+      <input type="number" id="paga-base" step="0.01" value="6.23" onchange="salvaImpostazioni()">
       
       <label for="monte-ore">Orario Base Contrattuale Settimanale</label>
       <select id="monte-ore" onchange="salvaImpostazioni()">
@@ -246,7 +246,7 @@
         <option value="40">40 ore (Tempo Pieno)</option>
       </select>
       
-      <h3 style="font-size: 14px; margin-top: 20px; border-bottom: 1px solid var(--border); padding-bottom: 4px;">Fascia Notturna (CCNL Cinema: 01:00 - 07:00)</h3>
+      <h3 style="font-size: 14px; margin-top: 20px; border-bottom: 1px solid var(--border); padding-bottom: 4px;">Fascia Notturna (CCNL: 01:00 - 07:00)</h3>
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
         <div><label for="inizio-notte">Inizio Notte</label><input type="time" id="inizio-notte" value="01:00" step="900" onchange="salvaImpostazioni()"></div>
         <div><label for="fine-notte">Fine Notte</label><input type="time" id="fine-notte" value="07:00" step="900" onchange="salvaImpostazioni()"></div>
@@ -261,10 +261,6 @@
         <div><label for="perc-straordinario">Straordinario (>40h)</label><input type="number" id="perc-straordinario" value="30" min="0" onchange="salvaImpostazioni()"></div>
         <div><label for="perc-festivo">Lavoro Festivo</label><input type="number" id="perc-festivo" value="55" min="0" onchange="salvaImpostazioni()"></div>
       </div>
-
-      <h3 style="font-size: 14px; margin-top: 20px; border-bottom: 1px solid var(--border); padding-bottom: 4px;">Fiscale e Trattenute</h3>
-      <label for="perc-trattenute">Stima Trattenute Totali Busta Paga (Contributi IVS + IRPEF Netta %)</label>
-      <input type="number" id="perc-trattenute" step="0.1" value="19.5" min="0" max="60" onchange="salvaImpostazioni()">
 
       <h3 style="font-size: 14px; margin-top: 25px; border-bottom: 1px solid var(--border); padding-bottom: 4px; color: var(--text-main);">Gestione Backup</h3>
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
@@ -328,13 +324,10 @@
       return (h || 0) * 60 + (m || 0);
     }
 
-    // --- PUNTO 1: SISTEMA DI RECUPERO E MIGRAZIONE AUTOMATICA DEI VECCHI DATI ---
+    // 1. MIGRAZIONE DATI RETROCOMPATIBILE
     function eseguiMigrazioneDati() {
-      const legacyVersions = [
-        'v14', 'v13', 'v12', 'v11', 'v10', 'v9', 'v8', 'v7', 'v6', 'v5', 'v4', 'v3', 'v2', 'v1', ''
-      ];
+      const legacyVersions = ['v14', 'v13', 'v12', 'v11', 'v10', 'v9', 'v8', 'v7', 'v6', 'v5', 'v4', 'v3', 'v2', 'v1', ''];
 
-      // Migrazione Turni
       let datiTurni = localStorage.getItem(CURRENT_STORAGE_KEY_TURNI);
       if (!datiTurni) {
         for (let ver of legacyVersions) {
@@ -345,8 +338,6 @@
               let parsed = JSON.parse(old);
               if (Array.isArray(parsed) && parsed.length > 0) {
                 localStorage.setItem(CURRENT_STORAGE_KEY_TURNI, old);
-                localStorage.setItem('mieiTurni_backup_auto', old);
-                console.log(`Migrati con successo ${parsed.length} turni da ${k}`);
                 break;
               }
             } catch(e) {}
@@ -354,7 +345,6 @@
         }
       }
 
-      // Migrazione Modelli
       let datiModelli = localStorage.getItem(CURRENT_STORAGE_KEY_MODELLI);
       if (!datiModelli) {
         for (let ver of legacyVersions) {
@@ -372,7 +362,6 @@
         }
       }
 
-      // Migrazione Impostazioni
       let datiImpostazioni = localStorage.getItem(CURRENT_STORAGE_KEY_IMPOSTAZIONI);
       if (!datiImpostazioni) {
         for (let ver of legacyVersions) {
@@ -402,8 +391,9 @@
       }
     }
 
+    // Configurazione predefinita con base netta
     let defaultImpostazioni = {
-      pagaBase: 7.33335,
+      pagaBase: 6.23,
       monteOre: 20,
       inizioNotte: '01:00',
       fineNotte: '07:00',
@@ -413,8 +403,7 @@
       percSupp2: 24,
       percStraordinario: 30,
       percFestivo: 55,
-      percRiposo: 75,
-      percTrattenute: 19.5
+      percRiposo: 75
     };
 
     let turni = safeLoadJSON(CURRENT_STORAGE_KEY_TURNI, []);
@@ -425,12 +414,11 @@
       localStorage.setItem(CURRENT_STORAGE_KEY_TURNI, JSON.stringify(turni));
       localStorage.setItem(CURRENT_STORAGE_KEY_MODELLI, JSON.stringify(modelli));
       localStorage.setItem(CURRENT_STORAGE_KEY_IMPOSTAZIONI, JSON.stringify(impostazioni));
-      // Salvataggio di sicurezza per mantenere sincronizzate versioni alternative
       localStorage.setItem('mieiTurni', JSON.stringify(turni));
     }
     salvaDatiMemoria();
 
-    // --- PUNTO 2: FUNZIONE DI RICALCOLO DINAMICO DIURNO / NOTTURNO SU TUTTI I TURNI ---
+    // 2. RICALCOLO NOTTURNO/DIURNO SUI TURNI
     function ricalcolaTurno(t) {
       let startMin = timeToMinutes(t.strInizio);
       let endMin = t.strFine === "24:00" ? 1440 : timeToMinutes(t.strFine);
@@ -476,7 +464,7 @@
     const configMap = {
       'paga-base': 'pagaBase', 'monte-ore': 'monteOre', 'inizio-notte': 'inizioNotte', 'fine-notte': 'fineNotte',
       'perc-straordinario': 'percStraordinario', 'perc-notturno': 'percNotturno', 'perc-festivo': 'percFestivo', 
-      'perc-domenica': 'percDomenica', 'perc-supp1': 'percSupp1', 'perc-supp2': 'percSupp2', 'perc-trattenute': 'percTrattenute'
+      'perc-domenica': 'percDomenica', 'perc-supp1': 'percSupp1', 'perc-supp2': 'percSupp2'
     };
 
     function popolaCampiImpostazioni() {
@@ -504,7 +492,6 @@
         }
       });
 
-      // Se è cambiata la fascia oraria del notturno, ricalcola tutti i turni salvati!
       if (vecchiaInizioNotte !== impostazioni.inizioNotte || vecchiaFineNotte !== impostazioni.fineNotte) {
         ricalcolaTuttiITurni();
         showToast("Fascia notturna aggiornata e turni ricalcolati!", "🌙");
@@ -540,7 +527,7 @@
       }, 200);
       
       el.classList.add('active');
-      const titles = { calendario: 'Calendario', inserisci: 'Registra Turno', riepilogo: 'Riepilogo CCNL' };
+      const titles = { calendario: 'Calendario', inserisci: 'Registra Turno', riepilogo: 'Riepilogo Netto' };
       document.getElementById('app-title').innerText = titles[tabName];
     }
 
@@ -671,7 +658,7 @@
       
       salvaDatiMemoria();
       aggiornaTutto();
-      showToast("Turno memorizzato con successo!");
+      showToast("Turno registrato!");
       document.getElementById('ora-inizio').value = ''; 
       document.getElementById('ora-fine').value = ''; 
       document.getElementById('pausa').value = '0';
@@ -777,7 +764,7 @@
       } else {
         tG.forEach(t => {
           let bH = '';
-          if(t.badge === 'festivo') bH = `<span class="badge badge-festivo">Festivo 55%</span>`;
+          if(t.badge === 'festivo') bH = `<span class="badge badge-festivo">Festivo +55%</span>`;
           if(t.badge === 'domenica') bH = `<span class="badge badge-domenica">Domenica +10%</span>`;
           if(t.badge === 'riposo_mancato') bH = `<span class="badge badge-riposo">Riposo</span>`;
           html += `
@@ -814,7 +801,7 @@
 
     function cambiaMeseRiepilogo(step) { rDate.setMonth(rDate.getMonth() + step); renderRiepilogoMensile(); }
 
-    // --- CALCOLO RETRIBUZIONE E RIEPILOGO SECONDO CCNL ESERCIZI CINEMATOGRAFICI ---
+    // CALCOLO NETTO DIRETTO (SENZA TASSE)
     function renderRiepilogoMensile() {
       const y = rDate.getFullYear(), m = rDate.getMonth();
       const mN = ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"];
@@ -840,7 +827,7 @@
 
       const baseWeekly = parseInt(impostazioni.monteOre) || 20;
       const supp1Limit = baseWeekly * 1.5; // es. 20h + 50% = 30h
-      const fullTimeLimit = 40; // Oltre le 40h è straordinario puro
+      const fullTimeLimit = 40;
 
       for (let lunedi in turniPerSettimana) {
           let turniSett = turniPerSettimana[lunedi].sort((a,b) => {
@@ -862,16 +849,14 @@
               if (isInQuestoMese) {
                   oreLavorateTotali += t.oreTotali;
                   
-                  // Cumulo indennità condizionali
+                  // Cumulo indennità
                   if (t.badge === 'domenica' || d.getDay() === 0) oreDomenicaliTot += t.oreTotali;
                   if (t.oreNotturne > 0) oreNotturneTot += t.oreNotturne;
                   if (t.badge === 'riposo_mancato') oreRiposoTot += t.oreTotali;
 
-                  // Se il turno è contrassegnato festivo, ha tariffazione dedicata Festivo (55%)
                   if (t.badge === 'festivo') {
                       oreFestiveTot += t.oreTotali;
                   } else {
-                      // Ripartizione scaglioni settimanali CCNL Part-Time
                       let oOrd = Math.max(0, Math.min(oreDopo, baseWeekly) - Math.min(orePrima, baseWeekly));
                       let oSupp1 = Math.max(0, Math.min(oreDopo, supp1Limit) - Math.max(orePrima, baseWeekly));
                       let oSupp2 = Math.max(0, Math.min(oreDopo, fullTimeLimit) - Math.max(orePrima, supp1Limit));
@@ -890,42 +875,40 @@
         <tr><th>Tipologia Ore</th><th>Totale</th></tr>
         <tr><td>Ore Lavorate Complessive</td><td>${oreLavorateTotali.toFixed(2)}h</td></tr>
         <tr style="color:var(--text-muted);"><td>• Ordinarie contrattuali (fino a ${baseWeekly}h/sett)</td><td>${oreOrdinarieTot.toFixed(2)}h</td></tr>
-        <tr style="color:var(--text-muted);"><td>• Supplementari al 20% (da ${baseWeekly}h a ${supp1Limit}h)</td><td>${oreSupp1Tot.toFixed(2)}h</td></tr>
-        <tr style="color:var(--text-muted);"><td>• Supplementari al 24% (da ${supp1Limit}h a ${fullTimeLimit}h)</td><td>${oreSupp2Tot.toFixed(2)}h</td></tr>
-        <tr style="color:var(--text-muted);"><td>• Straordinari al 30% (oltre ${fullTimeLimit}h)</td><td>${oreStraordinarioTot.toFixed(2)}h</td></tr>
+        <tr style="color:var(--text-muted);"><td>• Supplementari +20% (da ${baseWeekly}h a ${supp1Limit}h)</td><td>${oreSupp1Tot.toFixed(2)}h</td></tr>
+        <tr style="color:var(--text-muted);"><td>• Supplementari +24% (da ${supp1Limit}h a ${fullTimeLimit}h)</td><td>${oreSupp2Tot.toFixed(2)}h</td></tr>
+        <tr style="color:var(--text-muted);"><td>• Straordinari +30% (oltre ${fullTimeLimit}h)</td><td>${oreStraordinarioTot.toFixed(2)}h</td></tr>
         <tr style="color:var(--text-muted);"><td>• Ore in Giornate Festive</td><td>${oreFestiveTot.toFixed(2)}h</td></tr>
         <tr><td style="border-top:1px dashed var(--border);">Ore Domenicali (cumulano +${impostazioni.percDomenica}%)</td><td>${oreDomenicaliTot.toFixed(2)}h</td></tr>
         <tr><td>Ore Notturne (${impostazioni.inizioNotte}-${impostazioni.fineNotte}) (cumulano +${impostazioni.percNotturno}%)</td><td>${oreNotturneTot.toFixed(2)}h</td></tr>
       `;
 
+      // CALCOLI DIRETTI SU BASE NETTA
       const p = impostazioni.pagaBase;
-      const compOrdinarie   = oreOrdinarieTot * p;
-      const compSupp1       = oreSupp1Tot * p * (1 + impostazioni.percSupp1 / 100);
-      const compSupp2       = oreSupp2Tot * p * (1 + impostazioni.percSupp2 / 100);
-      const compStraord     = oreStraordinarioTot * p * (1 + impostazioni.percStraordinario / 100);
-      const compFestivo     = oreFestiveTot * p * (1 + impostazioni.percFestivo / 100);
+      const nettoOrdinarie  = oreOrdinarieTot * p;
+      const nettoSupp1      = oreSupp1Tot * p * (1 + impostazioni.percSupp1 / 100);
+      const nettoSupp2      = oreSupp2Tot * p * (1 + impostazioni.percSupp2 / 100);
+      const nettoStraord    = oreStraordinarioTot * p * (1 + impostazioni.percStraordinario / 100);
+      const nettoFestivo    = oreFestiveTot * p * (1 + impostazioni.percFestivo / 100);
 
-      // Maggiorazioni aggiuntive per cumulo effettivo (come in busta paga)
-      const compDomenicale  = oreDomenicaliTot * p * (impostazioni.percDomenica / 100);
-      const compNotturno    = oreNotturneTot * p * (impostazioni.percNotturno / 100);
-      const compRiposo      = oreRiposoTot * p * (impostazioni.percRiposo / 100);
+      // Maggiorazioni cumulate nette
+      const extraDomenicale = oreDomenicaliTot * p * (impostazioni.percDomenica / 100);
+      const extraNotturno   = oreNotturneTot * p * (impostazioni.percNotturno / 100);
+      const extraRiposo     = oreRiposoTot * p * (impostazioni.percRiposo / 100);
 
-      const totaleLordo = compOrdinarie + compSupp1 + compSupp2 + compStraord + compFestivo + compDomenicale + compNotturno + compRiposo;
-      const trattenuteStimate = totaleLordo * (impostazioni.percTrattenute / 100);
-      const nettoStimato = Math.max(0, totaleLordo - trattenuteStimate);
+      const totaleNetto = nettoOrdinarie + nettoSupp1 + nettoSupp2 + nettoStraord + nettoFestivo + extraDomenicale + extraNotturno + extraRiposo;
 
       document.getElementById('tabella-soldi-mensili').innerHTML = `
-        <tr><th>Voce Competenza</th><th>Importo Lordo</th></tr>
-        <tr><td>Retribuzione Ordinaria (${oreOrdinarieTot.toFixed(1)}h)</td><td>€ ${compOrdinarie.toFixed(2)}</td></tr>
-        <tr><td>Lavoro Supplementare 20% (${oreSupp1Tot.toFixed(1)}h)</td><td>€ ${compSupp1.toFixed(2)}</td></tr>
-        <tr><td>Lavoro Supplementare 24% (${oreSupp2Tot.toFixed(1)}h)</td><td>€ ${compSupp2.toFixed(2)}</td></tr>
-        ${oreStraordinarioTot > 0 ? `<tr><td>Lavoro Straordinario 30% (${oreStraordinarioTot.toFixed(1)}h)</td><td>€ ${compStraord.toFixed(2)}</td></tr>` : ''}
-        ${oreFestiveTot > 0 ? `<tr><td>Lavoro Festivo 55% (${oreFestiveTot.toFixed(1)}h)</td><td>€ ${compFestivo.toFixed(2)}</td></tr>` : ''}
-        <tr><td>Lavoro Domenicale 10% (extra ${oreDomenicaliTot.toFixed(1)}h)</td><td>€ ${compDomenicale.toFixed(2)}</td></tr>
-        <tr><td>Lavoro Notturno 20% (extra ${oreNotturneTot.toFixed(1)}h)</td><td>€ ${compNotturno.toFixed(2)}</td></tr>
-        <tr style="border-top:1px solid var(--border); font-weight:700;"><td>TOTALE COMPETENZE (Lordo)</td><td>€ ${totaleLordo.toFixed(2)}</td></tr>
-        <tr style="color:var(--danger);"><td>Stima Trattenute (IVS + FIS + IRPEF ~${impostazioni.percTrattenute}%)</td><td>- € ${trattenuteStimate.toFixed(2)}</td></tr>
-        <tr style="border-top:2px solid var(--accent); color:var(--accent); font-size:16px;"><td>NETTO ESTIMATO IN BUSTA</td><td>€ ${nettoStimato.toFixed(2)}</td></tr>
+        <tr><th>Voce</th><th>Netto</th></tr>
+        <tr><td>Ore Ordinarie (${oreOrdinarieTot.toFixed(1)}h)</td><td>€ ${nettoOrdinarie.toFixed(2)}</td></tr>
+        <tr><td>Supplementari +20% (${oreSupp1Tot.toFixed(1)}h)</td><td>€ ${nettoSupp1.toFixed(2)}</td></tr>
+        <tr><td>Supplementari +24% (${oreSupp2Tot.toFixed(1)}h)</td><td>€ ${nettoSupp2.toFixed(2)}</td></tr>
+        ${oreStraordinarioTot > 0 ? `<tr><td>Straordinari +30% (${oreStraordinarioTot.toFixed(1)}h)</td><td>€ ${nettoStraord.toFixed(2)}</td></tr>` : ''}
+        ${oreFestiveTot > 0 ? `<tr><td>Festivo +55% (${oreFestiveTot.toFixed(1)}h)</td><td>€ ${nettoFestivo.toFixed(2)}</td></tr>` : ''}
+        <tr><td>Extra Domeniche (+10% su ${oreDomenicaliTot.toFixed(1)}h)</td><td>€ ${extraDomenicale.toFixed(2)}</td></tr>
+        <tr><td>Extra Notturno (+20% su ${oreNotturneTot.toFixed(1)}h)</td><td>€ ${extraNotturno.toFixed(2)}</td></tr>
+        ${oreRiposoTot > 0 ? `<tr><td>Riposo non goduto (+${impostazioni.percRiposo}% su ${oreRiposoTot.toFixed(1)}h)</td><td>€ ${extraRiposo.toFixed(2)}</td></tr>` : ''}
+        <tr style="border-top:2px solid var(--accent); color:var(--accent); font-size:16px;"><td>TOTALE NETTO STIMATO</td><td>€ ${totaleNetto.toFixed(2)}</td></tr>
       `;
 
       const chartData = [oreOrdinarieTot.toFixed(1), (oreSupp1Tot + oreSupp2Tot + oreStraordinarioTot).toFixed(1), oreNotturneTot.toFixed(1), oreDomenicaliTot.toFixed(1)];
@@ -970,7 +953,6 @@
       if(document.getElementById('view-riepilogo').classList.contains('active')) renderRiepilogoMensile();
     }
     
-    // Prima esecuzione
     ricalcolaTuttiITurni();
     aggiornaTutto();
   </script>
