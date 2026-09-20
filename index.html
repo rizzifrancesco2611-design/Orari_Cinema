@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>I Miei Orari V14</title>
+  <title>I Miei Orari V15 - CCNL Cinema</title>
   
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" crossorigin="anonymous"></script>
   
@@ -185,16 +185,17 @@
       </div>
       <label for="pausa">Pausa (minuti non pagati)</label>
       <input type="number" id="pausa" value="0" min="0">
-      <label for="tipo-giornata">Contesto (Opzionale)</label>
+      <label for="tipo-giornata">Tipologia Giornata</label>
       <select id="tipo-giornata">
-        <option value="normale">Automatico (Normale / Festivo / Dom)</option>
-        <option value="riposo_mancato">Riposo Non Goduto (7° Giorno)</option>
+        <option value="normale">Automatico (Normale / Domenica / Festivo da calendario)</option>
+        <option value="festivo">Forza Festivo Lavorato (55%)</option>
+        <option value="riposo_mancato">Riposo Settimanale Non Goduto (7° Giorno)</option>
       </select>
       
       <div style="display: flex; gap: 10px; align-items: flex-end;">
         <div style="flex-grow: 1;">
           <label for="nome-modello">Nome Modello (Opzionale)</label>
-          <input type="text" id="nome-modello" placeholder="Es. Mattina Esterni">
+          <input type="text" id="nome-modello" placeholder="Es. Chiusura Cinema">
         </div>
         <button class="outline btn-sm" style="margin-bottom: 5px; height: 48px;" onclick="salvaModello()">Salva <br>Modello</button>
       </div>
@@ -208,7 +209,7 @@
     </div>
   </div>
 
-  <!-- 3. RIEPILOGO MENSILE E SOLDI -->
+  <!-- 3. RIEPILOGO MENSILE E BUSTA PAGA -->
   <div id="view-riepilogo" class="view-section">
     <div class="card">
       <div class="calendar-controls" style="margin-bottom: 20px;">
@@ -223,53 +224,56 @@
     </div>
 
     <div class="card">
-      <h2>Dettaglio Ore</h2>
+      <h2>Ripartizione Ore Lavorate</h2>
       <table class="table-custom" id="tabella-ore-mensili"></table>
     </div>
 
     <div class="card">
-      <h2>Stima Busta Paga</h2>
+      <h2>Stima Busta Paga (CCNL Cinema)</h2>
       <table class="table-custom" id="tabella-soldi-mensili"></table>
     </div>
 
     <div class="card">
-      <h2>Impostazioni & Tariffe</h2>
-      <label for="paga-base">Paga Base Oraria (€)</label>
-      <input type="number" id="paga-base" step="0.01" value="6.23" onchange="salvaImpostazioni()">
-      <label for="monte-ore">Monte ore settimanale (scatto straordinari)</label>
+      <h2>Parametri Contrattuali & Fasce</h2>
+      <label for="paga-base">Paga Base Oraria Minima (€)</label>
+      <input type="number" id="paga-base" step="0.00001" value="7.33335" onchange="salvaImpostazioni()">
+      
+      <label for="monte-ore">Orario Base Contrattuale Settimanale</label>
       <select id="monte-ore" onchange="salvaImpostazioni()">
-        <option value="40">40 ore</option>
+        <option value="20" selected>20 ore (Part-Time)</option>
         <option value="24">24 ore</option>
-        <option value="20" selected>20 ore</option>
+        <option value="30">30 ore</option>
+        <option value="40">40 ore (Tempo Pieno)</option>
       </select>
       
-      <h3 style="font-size: 14px; margin-top: 20px; border-bottom: 1px solid var(--border); padding-bottom: 4px;">Fascia Notturna</h3>
+      <h3 style="font-size: 14px; margin-top: 20px; border-bottom: 1px solid var(--border); padding-bottom: 4px;">Fascia Notturna (CCNL Cinema: 01:00 - 07:00)</h3>
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-        <div><label for="inizio-notte">Inizio</label><input type="time" id="inizio-notte" value="01:00" step="900" onchange="salvaImpostazioni()"></div>
-        <div><label for="fine-notte">Fine</label><input type="time" id="fine-notte" value="07:00" step="900" onchange="salvaImpostazioni()"></div>
+        <div><label for="inizio-notte">Inizio Notte</label><input type="time" id="inizio-notte" value="01:00" step="900" onchange="salvaImpostazioni()"></div>
+        <div><label for="fine-notte">Fine Notte</label><input type="time" id="fine-notte" value="07:00" step="900" onchange="salvaImpostazioni()"></div>
       </div>
 
-      <h3 style="font-size: 14px; margin-top: 20px; border-bottom: 1px solid var(--border); padding-bottom: 4px;">Maggiorazioni (%)</h3>
+      <h3 style="font-size: 14px; margin-top: 20px; border-bottom: 1px solid var(--border); padding-bottom: 4px;">Maggiorazioni Contrattuali (%)</h3>
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
         <div><label for="perc-domenica">Domenica</label><input type="number" id="perc-domenica" value="10" min="0" onchange="salvaImpostazioni()"></div>
-        <div><label for="perc-straordinario">Straordinari</label><input type="number" id="perc-straordinario" value="20" min="0" onchange="salvaImpostazioni()"></div>
         <div><label for="perc-notturno">Notturno</label><input type="number" id="perc-notturno" value="20" min="0" onchange="salvaImpostazioni()"></div>
-        <div><label for="perc-festivo">Festivo</label><input type="number" id="perc-festivo" value="55" min="0" onchange="salvaImpostazioni()"></div>
-        <div><label for="perc-riposo">Riposo non goduto</label><input type="number" id="perc-riposo" value="75" min="0" onchange="salvaImpostazioni()"></div>
+        <div><label for="perc-supp1">Supplementare ≤50% (es. fino a 30h)</label><input type="number" id="perc-supp1" value="20" min="0" onchange="salvaImpostazioni()"></div>
+        <div><label for="perc-supp2">Supplementare >50% (fino a 40h)</label><input type="number" id="perc-supp2" value="24" min="0" onchange="salvaImpostazioni()"></div>
+        <div><label for="perc-straordinario">Straordinario (>40h)</label><input type="number" id="perc-straordinario" value="30" min="0" onchange="salvaImpostazioni()"></div>
+        <div><label for="perc-festivo">Lavoro Festivo</label><input type="number" id="perc-festivo" value="55" min="0" onchange="salvaImpostazioni()"></div>
       </div>
 
-      <h3 style="font-size: 14px; margin-top: 20px; border-bottom: 1px solid var(--border); padding-bottom: 4px;">Bonus Fissi (€)</h3>
-      <label for="bonus-festivo">Bonus Festivo (Indennità al giorno)</label>
-      <input type="number" id="bonus-festivo" step="1" value="25" min="0" onchange="salvaImpostazioni()">
-      
-      <h3 style="font-size: 14px; margin-top: 25px; border-bottom: 1px solid var(--border); padding-bottom: 4px; color: var(--text-main);">Gestione Dati</h3>
+      <h3 style="font-size: 14px; margin-top: 20px; border-bottom: 1px solid var(--border); padding-bottom: 4px;">Fiscale e Trattenute</h3>
+      <label for="perc-trattenute">Stima Trattenute Totali Busta Paga (Contributi IVS + IRPEF Netta %)</label>
+      <input type="number" id="perc-trattenute" step="0.1" value="19.5" min="0" max="60" onchange="salvaImpostazioni()">
+
+      <h3 style="font-size: 14px; margin-top: 25px; border-bottom: 1px solid var(--border); padding-bottom: 4px; color: var(--text-main);">Gestione Backup</h3>
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
         <button class="outline" style="margin-top: 5px; color: var(--accent); border-color: var(--accent);" onclick="esportaDati()">⬇️ Esporta Backup</button>
         <button class="outline" style="margin-top: 5px; color: var(--accent); border-color: var(--accent);" onclick="document.getElementById('import-file').click()">⬆️ Importa Dati</button>
         <input type="file" id="import-file" style="display:none;" accept=".json" onchange="importaDati(event)">
       </div>
 
-      <button class="outline" style="margin-top: 15px; color: var(--danger); border-color: var(--danger);" onclick="richiediCancellazione()">Cancella Tutti i Dati dell'App</button>
+      <button class="outline" style="margin-top: 15px; color: var(--danger); border-color: var(--danger);" onclick="richiediCancellazione()">Cancella Dati Archiviati</button>
     </div>
   </div>
 
@@ -280,6 +284,10 @@
   </nav>
 
   <script>
+    const CURRENT_STORAGE_KEY_TURNI = 'mieiTurni_v15';
+    const CURRENT_STORAGE_KEY_MODELLI = 'mieiModelli_v15';
+    const CURRENT_STORAGE_KEY_IMPOSTAZIONI = 'mieImpostazioni_v15';
+
     function showToast(msg, icon="✅") {
       const tb = document.getElementById('toastBox');
       document.getElementById('toastMsg').innerText = msg;
@@ -314,6 +322,77 @@
     }
     document.getElementById('modalConfirmBtn').onclick = () => { if(confirmCallback) confirmCallback(); closeConfirmModal(); };
 
+    function timeToMinutes(ts) {
+      if(!ts) return 0;
+      const [h, m] = ts.split(':').map(Number);
+      return (h || 0) * 60 + (m || 0);
+    }
+
+    // --- PUNTO 1: SISTEMA DI RECUPERO E MIGRAZIONE AUTOMATICA DEI VECCHI DATI ---
+    function eseguiMigrazioneDati() {
+      const legacyVersions = [
+        'v14', 'v13', 'v12', 'v11', 'v10', 'v9', 'v8', 'v7', 'v6', 'v5', 'v4', 'v3', 'v2', 'v1', ''
+      ];
+
+      // Migrazione Turni
+      let datiTurni = localStorage.getItem(CURRENT_STORAGE_KEY_TURNI);
+      if (!datiTurni) {
+        for (let ver of legacyVersions) {
+          let k = ver ? `mieiTurni_${ver}` : 'mieiTurni';
+          let old = localStorage.getItem(k);
+          if (old) {
+            try {
+              let parsed = JSON.parse(old);
+              if (Array.isArray(parsed) && parsed.length > 0) {
+                localStorage.setItem(CURRENT_STORAGE_KEY_TURNI, old);
+                localStorage.setItem('mieiTurni_backup_auto', old);
+                console.log(`Migrati con successo ${parsed.length} turni da ${k}`);
+                break;
+              }
+            } catch(e) {}
+          }
+        }
+      }
+
+      // Migrazione Modelli
+      let datiModelli = localStorage.getItem(CURRENT_STORAGE_KEY_MODELLI);
+      if (!datiModelli) {
+        for (let ver of legacyVersions) {
+          let k = ver ? `mieiModelli_${ver}` : 'mieiModelli';
+          let old = localStorage.getItem(k);
+          if (old) {
+            try {
+              let parsed = JSON.parse(old);
+              if (Array.isArray(parsed) && parsed.length > 0) {
+                localStorage.setItem(CURRENT_STORAGE_KEY_MODELLI, old);
+                break;
+              }
+            } catch(e) {}
+          }
+        }
+      }
+
+      // Migrazione Impostazioni
+      let datiImpostazioni = localStorage.getItem(CURRENT_STORAGE_KEY_IMPOSTAZIONI);
+      if (!datiImpostazioni) {
+        for (let ver of legacyVersions) {
+          let k = ver ? `mieImpostazioni_${ver}` : 'mieImpostazioni';
+          let old = localStorage.getItem(k);
+          if (old) {
+            try {
+              let parsed = JSON.parse(old);
+              if (parsed && typeof parsed === 'object') {
+                localStorage.setItem(CURRENT_STORAGE_KEY_IMPOSTAZIONI, old);
+                break;
+              }
+            } catch(e) {}
+          }
+        }
+      }
+    }
+
+    eseguiMigrazioneDati();
+
     function safeLoadJSON(key, fallback) {
       try {
         const raw = localStorage.getItem(key);
@@ -323,13 +402,128 @@
       }
     }
 
-    let isDark = localStorage.getItem('theme_v14') === 'dark';
+    let defaultImpostazioni = {
+      pagaBase: 7.33335,
+      monteOre: 20,
+      inizioNotte: '01:00',
+      fineNotte: '07:00',
+      percDomenica: 10,
+      percNotturno: 20,
+      percSupp1: 20,
+      percSupp2: 24,
+      percStraordinario: 30,
+      percFestivo: 55,
+      percRiposo: 75,
+      percTrattenute: 19.5
+    };
+
+    let turni = safeLoadJSON(CURRENT_STORAGE_KEY_TURNI, []);
+    let modelli = safeLoadJSON(CURRENT_STORAGE_KEY_MODELLI, []);
+    let impostazioni = Object.assign({}, defaultImpostazioni, safeLoadJSON(CURRENT_STORAGE_KEY_IMPOSTAZIONI, {}));
+
+    function salvaDatiMemoria() {
+      localStorage.setItem(CURRENT_STORAGE_KEY_TURNI, JSON.stringify(turni));
+      localStorage.setItem(CURRENT_STORAGE_KEY_MODELLI, JSON.stringify(modelli));
+      localStorage.setItem(CURRENT_STORAGE_KEY_IMPOSTAZIONI, JSON.stringify(impostazioni));
+      // Salvataggio di sicurezza per mantenere sincronizzate versioni alternative
+      localStorage.setItem('mieiTurni', JSON.stringify(turni));
+    }
+    salvaDatiMemoria();
+
+    // --- PUNTO 2: FUNZIONE DI RICALCOLO DINAMICO DIURNO / NOTTURNO SU TUTTI I TURNI ---
+    function ricalcolaTurno(t) {
+      let startMin = timeToMinutes(t.strInizio);
+      let endMin = t.strFine === "24:00" ? 1440 : timeToMinutes(t.strFine);
+      if (endMin <= startMin) endMin += 1440;
+      
+      const notteInizio = timeToMinutes(impostazioni.inizioNotte);
+      const notteFine = timeToMinutes(impostazioni.fineNotte);
+      
+      let durataMin = endMin - startMin;
+      let pausaMin = (t.pausa !== undefined) ? parseInt(t.pausa) : Math.max(0, Math.round((durataMin / 60 - t.oreTotali) * 60));
+
+      let minutiDiurni = 0, minutiNotturni = 0;
+      for (let m = startMin; m < endMin; m++) {
+        let modM = m % 1440;
+        let isNotte = (notteInizio > notteFine)
+          ? (modM >= notteInizio || modM < notteFine)
+          : (modM >= notteInizio && modM < notteFine);
+        if (isNotte) minutiNotturni++;
+        else minutiDiurni++;
+      }
+
+      let p = pausaMin;
+      if (minutiDiurni >= p) {
+        minutiDiurni -= p;
+      } else {
+        p -= minutiDiurni;
+        minutiDiurni = 0;
+        minutiNotturni = Math.max(0, minutiNotturni - p);
+      }
+
+      t.pausa = pausaMin;
+      t.oreDiurne = +((minutiDiurni) / 60).toFixed(4);
+      t.oreNotturne = +((minutiNotturni) / 60).toFixed(4);
+      t.oreTotali = +((minutiDiurni + minutiNotturni) / 60).toFixed(4);
+      return t;
+    }
+
+    function ricalcolaTuttiITurni() {
+      turni.forEach(t => ricalcolaTurno(t));
+      salvaDatiMemoria();
+    }
+
+    const configMap = {
+      'paga-base': 'pagaBase', 'monte-ore': 'monteOre', 'inizio-notte': 'inizioNotte', 'fine-notte': 'fineNotte',
+      'perc-straordinario': 'percStraordinario', 'perc-notturno': 'percNotturno', 'perc-festivo': 'percFestivo', 
+      'perc-domenica': 'percDomenica', 'perc-supp1': 'percSupp1', 'perc-supp2': 'percSupp2', 'perc-trattenute': 'percTrattenute'
+    };
+
+    function popolaCampiImpostazioni() {
+      Object.keys(configMap).forEach(id => {
+        const el = document.getElementById(id);
+        if(el && impostazioni[configMap[id]] !== undefined) {
+          el.value = impostazioni[configMap[id]];
+        }
+      });
+    }
+    popolaCampiImpostazioni();
+
+    function salvaImpostazioni() {
+      const vecchiaInizioNotte = impostazioni.inizioNotte;
+      const vecchiaFineNotte = impostazioni.fineNotte;
+
+      Object.keys(configMap).forEach(id => {
+        let val = document.getElementById(id).value;
+        if(id.includes('notte')) {
+          impostazioni[configMap[id]] = val;
+        } else if(id === 'monte-ore') {
+          impostazioni[configMap[id]] = parseInt(val) || 20;
+        } else {
+          impostazioni[configMap[id]] = parseFloat(val) || 0;
+        }
+      });
+
+      // Se è cambiata la fascia oraria del notturno, ricalcola tutti i turni salvati!
+      if (vecchiaInizioNotte !== impostazioni.inizioNotte || vecchiaFineNotte !== impostazioni.fineNotte) {
+        ricalcolaTuttiITurni();
+        showToast("Fascia notturna aggiornata e turni ricalcolati!", "🌙");
+      } else {
+        salvaDatiMemoria();
+        showToast("Impostazioni salvate", "⚙️");
+      }
+      aggiornaTutto();
+    }
+
+    // TEMA DARK / LIGHT
+    let isDark = localStorage.getItem('theme_v15') === 'dark';
     function applyTheme() {
       if(isDark) document.documentElement.setAttribute('data-theme', 'dark');
       else document.documentElement.removeAttribute('data-theme');
     }
     function toggleTheme() {
-      isDark = !isDark; localStorage.setItem('theme_v14', isDark ? 'dark' : 'light');
+      isDark = !isDark;
+      localStorage.setItem('theme_v15', isDark ? 'dark' : 'light');
       applyTheme();
       if(document.getElementById('view-riepilogo').classList.contains('active')) renderRiepilogoMensile(); 
     }
@@ -346,51 +540,12 @@
       }, 200);
       
       el.classList.add('active');
-      const titles = { calendario: 'Calendario', inserisci: 'Registra Turno', riepilogo: 'Riepilogo Mensile' };
+      const titles = { calendario: 'Calendario', inserisci: 'Registra Turno', riepilogo: 'Riepilogo CCNL' };
       document.getElementById('app-title').innerText = titles[tabName];
     }
 
     document.getElementById('data-turno').valueAsDate = new Date();
-    
-    let turni = safeLoadJSON('mieiTurni_v14', safeLoadJSON('mieiTurni_v13', safeLoadJSON('mieiTurni_v12', safeLoadJSON('mieiTurni_v11', safeLoadJSON('mieiTurni_v10', safeLoadJSON('mieiTurni_v9', safeLoadJSON('mieiTurni_v8', safeLoadJSON('mieiTurni', []))))))));
-    let modelli = safeLoadJSON('mieiModelli_v14', safeLoadJSON('mieiModelli_v13', safeLoadJSON('mieiModelli_v12', safeLoadJSON('mieiModelli_v11', safeLoadJSON('mieiModelli_v10', safeLoadJSON('mieiModelli_v9', safeLoadJSON('mieiModelli_v8', safeLoadJSON('mieiModelli', []))))))));
-    let impostazioni = safeLoadJSON('mieImpostazioni_v14', safeLoadJSON('mieImpostazioni_v13', safeLoadJSON('mieImpostazioni_v12', safeLoadJSON('mieImpostazioni_v11', safeLoadJSON('mieImpostazioni_v10', safeLoadJSON('mieImpostazioni_v9', safeLoadJSON('mieImpostazioni_v8', safeLoadJSON('mieImpostazioni', { 
-      pagaBase: 6.23, monteOre: 20, inizioNotte: '01:00', fineNotte: '07:00',
-      percStraordinario: 20, percNotturno: 20, percFestivo: 55, percRiposo: 75, percDomenica: 10, bonusFestivo: 25
-    }))))))));
 
-    localStorage.setItem('mieiTurni_v14', JSON.stringify(turni));
-    localStorage.setItem('mieiModelli_v14', JSON.stringify(modelli));
-    localStorage.setItem('mieImpostazioni_v14', JSON.stringify(impostazioni));
-
-    const configMap = {
-      'paga-base': 'pagaBase', 'monte-ore': 'monteOre', 'inizio-notte': 'inizioNotte', 'fine-notte': 'fineNotte',
-      'perc-straordinario': 'percStraordinario', 'perc-notturno': 'percNotturno', 'perc-festivo': 'percFestivo', 
-      'perc-riposo': 'percRiposo', 'perc-domenica': 'percDomenica', 'bonus-festivo': 'bonusFestivo'
-    };
-
-    Object.keys(configMap).forEach(id => {
-      if(document.getElementById(id)) document.getElementById(id).value = impostazioni[configMap[id]];
-    });
-
-    function salvaImpostazioni() {
-      Object.keys(configMap).forEach(id => {
-        let val = document.getElementById(id).value;
-        if(id.includes('notte')) {
-          impostazioni[configMap[id]] = val;
-        } else if(id === 'monte-ore') {
-          impostazioni[configMap[id]] = parseInt(val) || 20;
-        } else {
-          impostazioni[configMap[id]] = parseFloat(val) || 0;
-        }
-      });
-      localStorage.setItem('mieImpostazioni_v14', JSON.stringify(impostazioni));
-      showToast("Impostazioni salvate", "⚙️");
-      aggiornaTutto();
-    }
-
-    function timeToMinutes(ts) { const [h, m] = ts.split(':').map(Number); return h * 60 + m; }
-    
     function getInizioSettimana(dateObj) {
       const d = new Date(dateObj);
       const day = d.getDay();
@@ -435,7 +590,7 @@
         showToast("Modello salvato", "💾");
       }
       
-      localStorage.setItem('mieiModelli_v14', JSON.stringify(modelli));
+      salvaDatiMemoria();
       document.getElementById('nome-modello').value = '';
       renderModelli();
     }
@@ -443,7 +598,7 @@
     function eliminaModello(id, event) {
       event.stopPropagation();
       modelli = modelli.filter(m => m.id !== id);
-      localStorage.setItem('mieiModelli_v14', JSON.stringify(modelli));
+      salvaDatiMemoria();
       renderModelli();
       showToast("Modello eliminato", "🗑️");
     }
@@ -452,23 +607,16 @@
       const mod = modelli.find(m => m.id === id);
       document.getElementById('ora-inizio').value = mod.inizio;
       document.getElementById('ora-fine').value = mod.fine;
-      document.getElementById('pausa').value = mod.pausa;
-      document.getElementById('tipo-giornata').value = mod.tipo;
+      document.getElementById('pausa').value = mod.pausa || 0;
+      document.getElementById('tipo-giornata').value = mod.tipo || 'normale';
       showToast("Modello incollato", "📋");
     }
 
     function renderModelli() {
-      modelli.sort((a,b) => {
-        let sA = timeToMinutes(a.inizio), sB = timeToMinutes(b.inizio);
-        if(sA !== sB) return sA - sB;
-        let dA = timeToMinutes(a.fine) - sA; if(dA<0) dA+=1440;
-        let dB = timeToMinutes(a.fine) - sB; if(dB<0) dB+=1440;
-        return dA - dB;
-      });
-
+      modelli.sort((a,b) => timeToMinutes(a.inizio) - timeToMinutes(b.inizio));
       const cont = document.getElementById('modelli-container');
       if(modelli.length === 0) {
-        cont.innerHTML = "<p style='color:var(--text-muted); font-size:13px;'>Nessun modello salvato.</p>";
+        cont.innerHTML = "<p style='color:var(--text-muted); font-size:13px;'>Nessun modello memorizzato.</p>";
         return;
       }
       let html = '';
@@ -492,73 +640,65 @@
       const tipo = document.getElementById('tipo-giornata').value;
 
       if(!dataStr || !inizioStr || !fineStr) return showToast("Compila tutti i campi!", "⚠️");
-      
-      if (inizioStr === fineStr) {
-        return showToast("Ora inizio e fine coincidono!", "⚠️");
-      }
+      if(inizioStr === fineStr) return showToast("Inizio e fine coincidono!", "⚠️");
 
-      let inizioMinuti = timeToMinutes(inizioStr), fineMinuti = timeToMinutes(fineStr), dataObj = new Date(dataStr);
+      let inizioMinuti = timeToMinutes(inizioStr), fineMinuti = timeToMinutes(fineStr);
+      let dataObj = new Date(dataStr + "T00:00:00");
       const durataMin = fineMinuti > inizioMinuti ? (fineMinuti - inizioMinuti) : (1440 - inizioMinuti + fineMinuti);
       
-      if (pausa >= durataMin) {
-        return showToast("La pausa è troppo lunga", "⚠️");
-      }
+      if(pausa >= durataMin) return showToast("La pausa supera o eguaglia la durata!", "⚠️");
 
       let badgeGiorno1 = 'normale';
-      if (tipo !== 'normale') badgeGiorno1 = tipo;
-      else if (isFestivo(dataObj)) badgeGiorno1 = 'festivo';
-      else if (dataObj.getDay() === 0) badgeGiorno1 = 'domenica';
+      if(tipo !== 'normale') badgeGiorno1 = tipo;
+      else if(isFestivo(dataObj)) badgeGiorno1 = 'festivo';
+      else if(dataObj.getDay() === 0) badgeGiorno1 = 'domenica';
 
-      if (fineMinuti > inizioMinuti) {
-        calcolaFrammento(dataStr, inizioMinuti, fineMinuti, pausa, badgeGiorno1, inizioStr, fineStr);
+      if(fineMinuti > inizioMinuti) {
+        creaFrammentoTurno(dataStr, inizioStr, fineStr, pausa, badgeGiorno1);
       } else {
-        calcolaFrammento(dataStr, inizioMinuti, 1440, pausa, badgeGiorno1, inizioStr, "24:00"); 
-        let dataObj2 = new Date(dataObj); dataObj2.setDate(dataObj2.getDate() + 1);
+        creaFrammentoTurno(dataStr, inizioStr, "24:00", pausa, badgeGiorno1);
+        let dataObj2 = new Date(dataObj);
+        dataObj2.setDate(dataObj2.getDate() + 1);
         let dataStr2 = dataObj2.toISOString().split('T')[0];
         
         let badgeGiorno2 = 'normale';
-        if (tipo === 'riposo_mancato') badgeGiorno2 = 'riposo_mancato';
-        else if (isFestivo(dataObj2)) badgeGiorno2 = 'festivo';
-        else if (dataObj2.getDay() === 0) badgeGiorno2 = 'domenica';
+        if(tipo === 'festivo' || isFestivo(dataObj2)) badgeGiorno2 = 'festivo';
+        else if(tipo === 'riposo_mancato') badgeGiorno2 = 'riposo_mancato';
+        else if(dataObj2.getDay() === 0) badgeGiorno2 = 'domenica';
 
-        calcolaFrammento(dataStr2, 0, fineMinuti, 0, badgeGiorno2, "00:00", fineStr);
+        creaFrammentoTurno(dataStr2, "00:00", fineStr, 0, badgeGiorno2);
       }
       
-      localStorage.setItem('mieiTurni_v14', JSON.stringify(turni));
+      salvaDatiMemoria();
       aggiornaTutto();
-      showToast("Turno registrato con successo!");
+      showToast("Turno memorizzato con successo!");
       document.getElementById('ora-inizio').value = ''; 
       document.getElementById('ora-fine').value = ''; 
       document.getElementById('pausa').value = '0';
     }
 
-    function calcolaFrammento(data, startMin, endMin, pausa, badge, strInizio, strFine) {
-      if (startMin >= endMin) return;
-      const notteInizio = timeToMinutes(impostazioni.inizioNotte), notteFine = timeToMinutes(impostazioni.fineNotte);
-      let minutiDiurni = 0, minutiNotturni = 0;
-      for (let m = startMin; m < endMin; m++) {
-        let isNotte = (notteInizio > notteFine) ? (m >= notteInizio || m < notteFine) : (m >= notteInizio && m < notteFine);
-        isNotte ? minutiNotturni++ : minutiDiurni++;
-      }
-      if (minutiDiurni >= pausa) minutiDiurni -= pausa; 
-      else { pausa -= minutiDiurni; minutiDiurni = 0; minutiNotturni -= pausa; }
-      if(minutiNotturni < 0) minutiNotturni = 0;
-      
-      turni.push({ 
-        id: Date.now() + Math.random(), data: data, strInizio: strInizio, strFine: strFine, 
-        oreTotali: +((minutiDiurni + minutiNotturni)/60).toFixed(4), 
-        oreDiurne: +(minutiDiurni/60).toFixed(4), 
-        oreNotturne: +(minutiNotturni/60).toFixed(4), 
-        badge: badge 
-      });
+    function creaFrammentoTurno(data, strInizio, strFine, pausa, badge) {
+      let t = {
+        id: Date.now() + Math.random(),
+        data: data,
+        strInizio: strInizio,
+        strFine: strFine,
+        pausa: pausa,
+        badge: badge,
+        oreTotali: 0,
+        oreDiurne: 0,
+        oreNotturne: 0
+      };
+      ricalcolaTurno(t);
+      turni.push(t);
     }
 
     function richiediEliminazione(id) {
       showConfirm("Elimina Turno", "Vuoi cancellare questo inserimento?", () => {
         turni = turni.filter(t => t.id !== id);
-        localStorage.setItem('mieiTurni_v14', JSON.stringify(turni));
+        salvaDatiMemoria();
         closeConfirmModal();
-        showToast("Turno eliminato", "🗑️");
+        showToast("Turno rimosso", "🗑️");
         aggiornaTutto();
         let testoData = document.getElementById('sheetDate').innerText.replace("Turni del ", "");
         if(testoData && testoData.includes("/")) {
@@ -569,11 +709,11 @@
     }
 
     function esportaDati() {
-      const exportData = { turni, modelli, impostazioni };
+      const exportData = { turni, modelli, impostazioni, backupTimestamp: new Date().toISOString() };
       const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportData));
       const downloadAnchorNode = document.createElement('a');
       downloadAnchorNode.setAttribute("href", dataStr);
-      downloadAnchorNode.setAttribute("download", "orari_backup.json");
+      downloadAnchorNode.setAttribute("download", `orari_cinema_backup_${new Date().toISOString().split('T')[0]}.json`);
       document.body.appendChild(downloadAnchorNode); 
       downloadAnchorNode.click();
       downloadAnchorNode.remove();
@@ -587,22 +727,16 @@
       reader.onload = function(e) {
         try {
           const imported = JSON.parse(e.target.result);
-          if (imported.turni) turni = imported.turni;
-          if (imported.modelli) modelli = imported.modelli;
-          if (imported.impostazioni) impostazioni = imported.impostazioni;
+          if (imported.turni && Array.isArray(imported.turni)) turni = imported.turni;
+          if (imported.modelli && Array.isArray(imported.modelli)) modelli = imported.modelli;
+          if (imported.impostazioni) impostazioni = Object.assign({}, defaultImpostazioni, imported.impostazioni);
           
-          localStorage.setItem('mieiTurni_v14', JSON.stringify(turni));
-          localStorage.setItem('mieiModelli_v14', JSON.stringify(modelli));
-          localStorage.setItem('mieImpostazioni_v14', JSON.stringify(impostazioni));
-          
-          Object.keys(configMap).forEach(id => {
-            if(document.getElementById(id)) document.getElementById(id).value = impostazioni[configMap[id]];
-          });
-          
+          ricalcolaTuttiITurni();
+          popolaCampiImpostazioni();
           aggiornaTutto();
-          showToast("Dati ripristinati con successo!", "✅");
+          showToast("Dati importati e ricalcolati!", "✅");
         } catch(err) {
-          showToast("File non valido", "❌");
+          showToast("File di backup non valido", "❌");
         }
       };
       reader.readAsText(file);
@@ -639,18 +773,18 @@
       document.getElementById('sheetDate').innerText = `Turni del ${dIta}`;
       let html = '';
       if(tG.length === 0) {
-          html = `<p style="color:var(--text-muted); font-size:14px; text-align:center;">Nessun turno in questa data.</p>`;
+          html = `<p style="color:var(--text-muted); font-size:14px; text-align:center;">Nessun turno registrato in questa data.</p>`;
       } else {
         tG.forEach(t => {
           let bH = '';
-          if(t.badge === 'festivo') bH = `<span class="badge badge-festivo">Festivo</span>`;
-          if(t.badge === 'domenica') bH = `<span class="badge badge-domenica">Domenica</span>`;
+          if(t.badge === 'festivo') bH = `<span class="badge badge-festivo">Festivo 55%</span>`;
+          if(t.badge === 'domenica') bH = `<span class="badge badge-domenica">Domenica +10%</span>`;
           if(t.badge === 'riposo_mancato') bH = `<span class="badge badge-riposo">Riposo</span>`;
           html += `
             <div class="turno-list-item">
               <div>
                 <strong style="font-size:15px;">${t.strInizio} - ${t.strFine}</strong> ${bH}<br>
-                <span style="font-size:13px; color:var(--text-muted);">Tot: ${t.oreTotali.toFixed(2)}h (Notte: ${t.oreNotturne.toFixed(1)}h)</span>
+                <span style="font-size:13px; color:var(--text-muted);">Ore: ${t.oreTotali.toFixed(2)}h (Notte: ${t.oreNotturne.toFixed(2)}h)</span>
               </div>
               <button class="outline btn-sm" onclick="richiediEliminazione(${t.id})">Elimina</button>
             </div>`;
@@ -659,7 +793,7 @@
       
       html += `
         <button onclick="vaiAInserimento('${dStr}')" style="margin-top: 15px; background: transparent; color: var(--accent); border: 2px dashed var(--accent); box-shadow: none;">
-          ➕ Inserisci Turno Qui
+          ➕ Aggiungi Turno in Questa Data
         </button>
       `;
 
@@ -680,6 +814,7 @@
 
     function cambiaMeseRiepilogo(step) { rDate.setMonth(rDate.getMonth() + step); renderRiepilogoMensile(); }
 
+    // --- CALCOLO RETRIBUZIONE E RIEPILOGO SECONDO CCNL ESERCIZI CINEMATOGRAFICI ---
     function renderRiepilogoMensile() {
       const y = rDate.getFullYear(), m = rDate.getMonth();
       const mN = ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"];
@@ -687,21 +822,29 @@
 
       let turniPerSettimana = {};
       turni.forEach(t => {
-          let d = new Date(t.data);
+          let d = new Date(t.data + "T00:00:00");
           let lunedi = getInizioSettimana(d).getTime();
           if(!turniPerSettimana[lunedi]) turniPerSettimana[lunedi] = [];
           turniPerSettimana[lunedi].push(t);
       });
 
-      let tO = 0, tD = 0, tN = 0, tF = 0, tDom = 0, tR = 0;
-      let oN = 0, sM = 0;
-      let notturnoInStraordinario = 0;
-      let giorniFestiviUnici = new Set();
-      let monteOreTarget = parseInt(impostazioni.monteOre) || 20;
+      let oreLavorateTotali = 0;
+      let oreOrdinarieTot = 0;
+      let oreSupp1Tot = 0; // 20%
+      let oreSupp2Tot = 0; // 24%
+      let oreStraordinarioTot = 0; // 30%
+      let oreFestiveTot = 0;
+      let oreDomenicaliTot = 0;
+      let oreNotturneTot = 0;
+      let oreRiposoTot = 0;
+
+      const baseWeekly = parseInt(impostazioni.monteOre) || 20;
+      const supp1Limit = baseWeekly * 1.5; // es. 20h + 50% = 30h
+      const fullTimeLimit = 40; // Oltre le 40h è straordinario puro
 
       for (let lunedi in turniPerSettimana) {
           let turniSett = turniPerSettimana[lunedi].sort((a,b) => {
-              let dataA = new Date(a.data), dataB = new Date(b.data);
+              let dataA = new Date(a.data + "T00:00:00"), dataB = new Date(b.data + "T00:00:00");
               if(dataA.getTime() !== dataB.getTime()) return dataA - dataB;
               return timeToMinutes(a.strInizio) - timeToMinutes(b.strInizio);
           });
@@ -709,7 +852,7 @@
           let oreAccumulateSettimana = 0;
 
           turniSett.forEach(t => {
-              let d = new Date(t.data);
+              let d = new Date(t.data + "T00:00:00");
               let isInQuestoMese = (d.getFullYear() === y && d.getMonth() === m);
               
               let orePrima = oreAccumulateSettimana;
@@ -717,72 +860,75 @@
               let oreDopo = oreAccumulateSettimana;
 
               if (isInQuestoMese) {
-                  tO += t.oreTotali;
-                  if(t.badge==='festivo') { tF += t.oreTotali; giorniFestiviUnici.add(t.data); }
-                  if(t.badge==='domenica') tDom += t.oreTotali;
-                  if(t.badge==='riposo_mancato') tR += t.oreTotali; 
+                  oreLavorateTotali += t.oreTotali;
                   
-                  let quotaNormale = 0, quotaStraordinaria = 0;
-                  if (orePrima >= monteOreTarget) {
-                      quotaStraordinaria = t.oreTotali; 
-                  } else if (oreDopo > monteOreTarget) {
-                      quotaNormale = monteOreTarget - orePrima; 
-                      quotaStraordinaria = oreDopo - monteOreTarget; 
+                  // Cumulo indennità condizionali
+                  if (t.badge === 'domenica' || d.getDay() === 0) oreDomenicaliTot += t.oreTotali;
+                  if (t.oreNotturne > 0) oreNotturneTot += t.oreNotturne;
+                  if (t.badge === 'riposo_mancato') oreRiposoTot += t.oreTotali;
+
+                  // Se il turno è contrassegnato festivo, ha tariffazione dedicata Festivo (55%)
+                  if (t.badge === 'festivo') {
+                      oreFestiveTot += t.oreTotali;
                   } else {
-                      quotaNormale = t.oreTotali; 
+                      // Ripartizione scaglioni settimanali CCNL Part-Time
+                      let oOrd = Math.max(0, Math.min(oreDopo, baseWeekly) - Math.min(orePrima, baseWeekly));
+                      let oSupp1 = Math.max(0, Math.min(oreDopo, supp1Limit) - Math.max(orePrima, baseWeekly));
+                      let oSupp2 = Math.max(0, Math.min(oreDopo, fullTimeLimit) - Math.max(orePrima, supp1Limit));
+                      let oStr = Math.max(0, oreDopo - Math.max(orePrima, fullTimeLimit));
+
+                      oreOrdinarieTot += oOrd;
+                      oreSupp1Tot += oSupp1;
+                      oreSupp2Tot += oSupp2;
+                      oreStraordinarioTot += oStr;
                   }
-
-                  const ratioNormale = t.oreTotali > 0 ? (quotaNormale / t.oreTotali) : 0;
-                  const diurneNormali   = t.oreDiurne   * ratioNormale;
-                  const notturneNormali = t.oreNotturne * ratioNormale;
-                  const notturneStraord = t.oreNotturne - notturneNormali;
-
-                  tD += diurneNormali;
-                  tN += notturneNormali;
-                  notturnoInStraordinario += notturneStraord;
-
-                  oN += quotaNormale;
-                  sM += quotaStraordinaria;
               }
           });
       }
 
       document.getElementById('tabella-ore-mensili').innerHTML = `
-        <tr><th>Tipologia</th><th>Ore</th></tr>
-        <tr><td>Lavorate (Totali)</td><td>${tO.toFixed(2)}h</td></tr>
-        <tr><td>Diurne Normali</td><td>${tD.toFixed(2)}h</td></tr>
-        <tr><td>Notturne (Fascia ${impostazioni.inizioNotte}-${impostazioni.fineNotte})</td><td>${tN.toFixed(2)}h</td></tr>
-        <tr><td>Domeniche</td><td>${tDom.toFixed(2)}h</td></tr>
-        <tr><td>Festivi Fissi</td><td>${tF.toFixed(2)}h</td></tr>
-        <tr><td>Straordinari (Oltre ${monteOreTarget}h settimanali)</td><td>${sM.toFixed(2)}h</td></tr>
-        <tr><td style="padding-left:20px; color:var(--text-muted); font-weight:400;">di cui in fascia notturna</td><td style="font-weight:400; color:var(--text-muted);">${notturnoInStraordinario.toFixed(2)}h</td></tr>
+        <tr><th>Tipologia Ore</th><th>Totale</th></tr>
+        <tr><td>Ore Lavorate Complessive</td><td>${oreLavorateTotali.toFixed(2)}h</td></tr>
+        <tr style="color:var(--text-muted);"><td>• Ordinarie contrattuali (fino a ${baseWeekly}h/sett)</td><td>${oreOrdinarieTot.toFixed(2)}h</td></tr>
+        <tr style="color:var(--text-muted);"><td>• Supplementari al 20% (da ${baseWeekly}h a ${supp1Limit}h)</td><td>${oreSupp1Tot.toFixed(2)}h</td></tr>
+        <tr style="color:var(--text-muted);"><td>• Supplementari al 24% (da ${supp1Limit}h a ${fullTimeLimit}h)</td><td>${oreSupp2Tot.toFixed(2)}h</td></tr>
+        <tr style="color:var(--text-muted);"><td>• Straordinari al 30% (oltre ${fullTimeLimit}h)</td><td>${oreStraordinarioTot.toFixed(2)}h</td></tr>
+        <tr style="color:var(--text-muted);"><td>• Ore in Giornate Festive</td><td>${oreFestiveTot.toFixed(2)}h</td></tr>
+        <tr><td style="border-top:1px dashed var(--border);">Ore Domenicali (cumulano +${impostazioni.percDomenica}%)</td><td>${oreDomenicaliTot.toFixed(2)}h</td></tr>
+        <tr><td>Ore Notturne (${impostazioni.inizioNotte}-${impostazioni.fineNotte}) (cumulano +${impostazioni.percNotturno}%)</td><td>${oreNotturneTot.toFixed(2)}h</td></tr>
       `;
 
-      const tNTotalePerPaga = tN + notturnoInStraordinario;
+      const p = impostazioni.pagaBase;
+      const compOrdinarie   = oreOrdinarieTot * p;
+      const compSupp1       = oreSupp1Tot * p * (1 + impostazioni.percSupp1 / 100);
+      const compSupp2       = oreSupp2Tot * p * (1 + impostazioni.percSupp2 / 100);
+      const compStraord     = oreStraordinarioTot * p * (1 + impostazioni.percStraordinario / 100);
+      const compFestivo     = oreFestiveTot * p * (1 + impostazioni.percFestivo / 100);
 
-      let p = impostazioni.pagaBase;
-      let cB = oN * p;
-      let extraStraordinario = sM * p * (impostazioni.percStraordinario / 100);
-      let extraNotturno      = tNTotalePerPaga * p * (impostazioni.percNotturno / 100);
-      let extraDomenica      = tDom * p * (impostazioni.percDomenica / 100);
-      let extraFestivo       = tF * p * (impostazioni.percFestivo / 100);
-      let cFissoFestivo      = giorniFestiviUnici.size * impostazioni.bonusFestivo;
-      let extraRiposo        = tR * p * (impostazioni.percRiposo / 100);
+      // Maggiorazioni aggiuntive per cumulo effettivo (come in busta paga)
+      const compDomenicale  = oreDomenicaliTot * p * (impostazioni.percDomenica / 100);
+      const compNotturno    = oreNotturneTot * p * (impostazioni.percNotturno / 100);
+      const compRiposo      = oreRiposoTot * p * (impostazioni.percRiposo / 100);
 
-      let tot = cB + extraStraordinario + extraNotturno + extraDomenica + extraFestivo + cFissoFestivo + extraRiposo + (sM * p);
+      const totaleLordo = compOrdinarie + compSupp1 + compSupp2 + compStraord + compFestivo + compDomenicale + compNotturno + compRiposo;
+      const trattenuteStimate = totaleLordo * (impostazioni.percTrattenute / 100);
+      const nettoStimato = Math.max(0, totaleLordo - trattenuteStimate);
 
       document.getElementById('tabella-soldi-mensili').innerHTML = `
-        <tr><th>Voce</th><th>Importo</th></tr>
-        <tr><td>Paga Base Standard</td><td>€ ${cB.toFixed(2)}</td></tr>
-        <tr><td>Paga Base Straordinari</td><td>€ ${(sM * p).toFixed(2)}</td></tr>
-        <tr><td>Maggiorazioni Notturne (extra)</td><td>€ ${extraNotturno.toFixed(2)}</td></tr>
-        <tr><td>Maggiorazioni Straordinari (extra)</td><td>€ ${extraStraordinario.toFixed(2)}</td></tr>
-        <tr><td>Domeniche (+${impostazioni.percDomenica}%)</td><td>€ ${extraDomenica.toFixed(2)}</td></tr>
-        <tr><td>Festivi (+${impostazioni.percFestivo}% e fisse)</td><td>€ ${(extraFestivo + cFissoFestivo).toFixed(2)}</td></tr>
-        <tr style="border-top:2px solid var(--accent); color:var(--accent);"><td>NETTO STIMATO</td><td>€ ${tot.toFixed(2)}</td></tr>
+        <tr><th>Voce Competenza</th><th>Importo Lordo</th></tr>
+        <tr><td>Retribuzione Ordinaria (${oreOrdinarieTot.toFixed(1)}h)</td><td>€ ${compOrdinarie.toFixed(2)}</td></tr>
+        <tr><td>Lavoro Supplementare 20% (${oreSupp1Tot.toFixed(1)}h)</td><td>€ ${compSupp1.toFixed(2)}</td></tr>
+        <tr><td>Lavoro Supplementare 24% (${oreSupp2Tot.toFixed(1)}h)</td><td>€ ${compSupp2.toFixed(2)}</td></tr>
+        ${oreStraordinarioTot > 0 ? `<tr><td>Lavoro Straordinario 30% (${oreStraordinarioTot.toFixed(1)}h)</td><td>€ ${compStraord.toFixed(2)}</td></tr>` : ''}
+        ${oreFestiveTot > 0 ? `<tr><td>Lavoro Festivo 55% (${oreFestiveTot.toFixed(1)}h)</td><td>€ ${compFestivo.toFixed(2)}</td></tr>` : ''}
+        <tr><td>Lavoro Domenicale 10% (extra ${oreDomenicaliTot.toFixed(1)}h)</td><td>€ ${compDomenicale.toFixed(2)}</td></tr>
+        <tr><td>Lavoro Notturno 20% (extra ${oreNotturneTot.toFixed(1)}h)</td><td>€ ${compNotturno.toFixed(2)}</td></tr>
+        <tr style="border-top:1px solid var(--border); font-weight:700;"><td>TOTALE COMPETENZE (Lordo)</td><td>€ ${totaleLordo.toFixed(2)}</td></tr>
+        <tr style="color:var(--danger);"><td>Stima Trattenute (IVS + FIS + IRPEF ~${impostazioni.percTrattenute}%)</td><td>- € ${trattenuteStimate.toFixed(2)}</td></tr>
+        <tr style="border-top:2px solid var(--accent); color:var(--accent); font-size:16px;"><td>NETTO ESTIMATO IN BUSTA</td><td>€ ${nettoStimato.toFixed(2)}</td></tr>
       `;
 
-      const chartData = [oN.toFixed(1), tN.toFixed(1), (sM+tF+tDom+tR).toFixed(1)];
+      const chartData = [oreOrdinarieTot.toFixed(1), (oreSupp1Tot + oreSupp2Tot + oreStraordinarioTot).toFixed(1), oreNotturneTot.toFixed(1), oreDomenicaliTot.toFixed(1)];
       const textColor = getComputedStyle(document.documentElement).getPropertyValue('--text-main');
 
       if (myChart) {
@@ -794,10 +940,10 @@
         myChart = new Chart(ctx, {
           type: 'doughnut',
           data: {
-            labels: ['Base', 'Notturne', 'Extra (Str/Fest/Dom)'],
+            labels: ['Ordinarie', 'Supplementari/Straord.', 'Notturne', 'Domenicali'],
             datasets: [{
               data: chartData,
-              backgroundColor: ['#007aff', '#5856d6', '#ff9500'],
+              backgroundColor: ['#007aff', '#ff9500', '#5856d6', '#34c759'],
               borderWidth: 0, hoverOffset: 5
             }]
           },
@@ -810,12 +956,11 @@
     }
 
     function richiediCancellazione() {
-      showConfirm("Inizializza App", "Sei sicuro di voler cancellare tutti i turni salvati?", () => {
+      showConfirm("Inizializza App", "Sei sicuro di voler cancellare i turni archiviati?", () => {
         turni = []; 
-        ['mieiTurni_v14', 'mieiTurni_v13', 'mieiTurni_v12', 'mieiTurni_v11', 'mieiTurni_v10', 'mieiTurni_v9', 'mieiTurni_v8', 'mieiTurni']
-          .forEach(k => localStorage.removeItem(k));
+        [CURRENT_STORAGE_KEY_TURNI, 'mieiTurni_v14', 'mieiTurni_v13', 'mieiTurni'].forEach(k => localStorage.removeItem(k));
         aggiornaTutto(); 
-        showToast("Dati cancellati", "🧹");
+        showToast("Dati azzerati", "🧹");
       });
     }
 
@@ -825,6 +970,8 @@
       if(document.getElementById('view-riepilogo').classList.contains('active')) renderRiepilogoMensile();
     }
     
+    // Prima esecuzione
+    ricalcolaTuttiITurni();
     aggiornaTutto();
   </script>
 </body>
